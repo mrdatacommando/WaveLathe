@@ -1,0 +1,37 @@
+# Build output. 4.6 GB, and every byte of it regenerates from Source/ plus
+# CMakeLists.txt. This includes the JUCE checkout that FetchContent pulls down,
+# which is why the folder is so much larger than the project itself.
+build/
+
+# Release packages. Rebuilt by Tools/make-release.ps1 from a Release build, and
+# the checksums in there are only meaningful for one particular compile.
+dist/
+
+# Milestone archives. Large zips and the older WaveForge_bk*.exe builds - the
+# kind of thing git handles worst, since each one is a new whole-file blob.
+# Once tags exist these are belt-and-braces anyway: a tag gets you back to a
+# state, and these get you back to it without a working toolchain.
+My Bks/
+
+# CMake, in case anyone ever configures in-tree by accident
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+install_manifest.txt
+
+# Visual Studio
+.vs/
+*.vcxproj
+*.vcxproj.*
+*.sln
+*.user
+*.suo
+
+# Windows shell litter
+Thumbs.db
+desktop.ini
+
+# Editor and OS
+*.swp
+*~
+.DS_Store

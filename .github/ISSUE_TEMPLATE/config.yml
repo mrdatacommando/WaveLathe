@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: User guide
+    url: https://github.com/mrdatacommando/WaveLathe/blob/main/Docs/WaveLathe-User-Guide.pdf
+    about: Every control explained, plus known limitations and troubleshooting.

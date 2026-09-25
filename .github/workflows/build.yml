@@ -1,0 +1,46 @@
+# Builds both products from a clean checkout and runs every test suite, on
+# every push and pull request.
+#
+# The point is the clean checkout. A build tree that has been configured once
+# can hide a file that is missing from the repository, or a step that only
+# ever worked because of something left on one machine. This one has nothing
+# left on it: JUCE is fetched fresh, as it would be for anybody cloning.
+
+name: Build and test
+
+on:
+  push:
+    branches: [main]
+    # A commit that only swaps the package in Releases\ changes nothing that
+    # builds.
+    paths-ignore: ['Releases/**']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 120
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # No -G: the newest Visual Studio on the runner, rather than a pinned one
+      # that a runner image update would remove.
+      - name: Configure
+        run: cmake -S . -B build -A x64
+
+      - name: Build
+        run: cmake --build build --config Release --parallel
+
+      # Windows PowerShell, as the scripts are written for and run with locally.
+      - name: Test
+        shell: powershell
+        run: powershell -ExecutionPolicy Bypass -File Tools\run-tests.ps1

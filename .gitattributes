@@ -1,0 +1,11 @@
+# Store every file exactly as it sits on disk, with no line-ending conversion.
+#
+# Git for Windows defaults to converting LF to CRLF on checkout and back on
+# commit. That is meant to help mixed teams, but on a solo Windows project it
+# only creates a class of confusion where a fresh checkout reports every file
+# as modified without anybody having touched one. Turning it off means what is
+# committed and what is checked out are the same bytes.
+#
+# If this project ever gains a contributor on macOS or Linux, revisit this -
+# that is the situation the default was designed for.
+* -text

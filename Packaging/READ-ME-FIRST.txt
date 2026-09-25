@@ -1,0 +1,146 @@
+WaveLathe {{VERSION}}  -  BETA
+A wavetable synthesiser for Windows, and a mastering plugin
+================================================================
+
+
+WHAT IS IN THIS FOLDER
+
+  WaveLathe.exe                The synthesiser, standalone. Just run it.
+  VST3\WaveLathe.vst3          The synthesiser, for use inside a DAW.
+
+  WaveLathe Master.exe         The mastering chain, standalone.
+  VST3\WaveLathe Master.vst3   The mastering chain, as an effect.
+
+  WaveLathe-User-Guide.pdf     The manual. If you read one part, read
+                               section 3 - "Your first sound".
+  LICENSE.txt                  The licence: GNU AGPL, version 3.
+  THIRD_PARTY_NOTICES.txt      The licences of the parts WaveLathe
+                               is built with.
+  CHANGELOG.txt                What changed, newest first.
+
+
+FREE AND OPEN SOURCE
+
+  WaveLathe is free software, under the GNU Affero General Public
+  License, version 3 or later. Use it for anything, including music
+  you sell - there is no fee and nothing to register.
+
+  What you make with it is yours. The licence covers WaveLathe's
+  code, not your sounds, presets, projects or recordings.
+
+  You may pass this folder on to anybody. If you do - or if you pass
+  on a version you have changed - offer them the source code too,
+  under the same licence. That is what keeps it free.
+
+  The complete source for this release is at
+
+      https://github.com/mrdatacommando/WaveLathe
+
+  tagged v{{VERSION}}. It builds with JUCE 9.0.1, which it fetches from
+  https://github.com/juce-framework/JUCE on its own.
+
+  WaveLathe comes with no warranty. See LICENSE.txt for the terms.
+
+
+WHAT THE SECOND ONE IS FOR
+
+  Saturation, a compressor and a limiter, over a finished mix.
+
+  The synthesiser has the same three on its own Master page, where
+  they only ever hear the synthesiser. WaveLathe Master is the same
+  thing as an effect you put on a mix bus, so it catches everything
+  going through it - other instruments included, whoever made them.
+
+  Inside the synthesiser these controls are saved with a patch but
+  cannot be automated. In the effect plugin every one of them can.
+
+  Note that it starts switched ON, while the page inside the
+  synthesiser starts switched off. That is deliberate: an effect you
+  went and put on a bus should do something, and a synthesiser that
+  changed how all its old patches sound should not.
+
+
+TO RUN THE STANDALONE
+
+  Double-click WaveLathe.exe. There is nothing to install.
+
+  The first thing to do is open  Options -> Audio / MIDI Settings
+  and choose your output device. Until you do, you may get no sound
+  at all. This catches nearly everybody once.
+
+
+TO INSTALL THE PLUGINS
+
+  Copy the whole  VST3\WaveLathe.vst3  FOLDER - not just the file
+  inside it - into:
+
+      C:\Program Files\Common Files\VST3\
+
+  and the same for  VST3\WaveLathe Master.vst3  if you want it.
+  Either works on its own; neither needs the other.
+
+  That needs administrator rights. If you would rather not do that,
+  most DAWs let you add a plugin folder of your own and scan that
+  instead, which needs no special permissions.
+
+  Then rescan your plugins in your DAW. WaveLathe appears as an
+  instrument, WaveLathe Master as an effect.
+
+
+IF WINDOWS WARNS YOU
+
+  You may see "Windows protected your PC" the first time you run it.
+  Choose  More info -> Run anyway.
+
+  WaveLathe is not code-signed, so Windows says this about it. That
+  message is what an unsigned program looks like. It is not a report
+  of anything having been found in the file.
+
+
+THIS IS A BETA - TWO THINGS I WOULD LIKE TESTED
+
+  Both of these need the plugin inside a DAW, and neither has been
+  tested end to end yet. If you use a DAW, these are the two that
+  would help most:
+
+  1. SAVE AND REOPEN A PROJECT
+     Build a sound you like - one that is NOT just a factory preset -
+     save the project, close the DAW completely, and open it again.
+     Did your sound come back exactly as you left it?
+
+  2. BOUNCE A LONG TAIL
+     Set a long reverb or a delay with plenty of feedback, play a
+     chord, and export/bounce the track.
+     Is the tail still there at the end, or is it cut off?
+
+  Either way, I would like to know - on the Issues page, below.
+  "It was fine" is a useful answer.
+
+
+IF IT CRASHES
+
+  Windows writes a file that says where. Look in:
+
+      %LOCALAPPDATA%\CrashDumps
+
+  for a file named  WaveLathe.exe.<number>.dmp  with a timestamp from
+  around when it happened. Zip it - GitHub will not take a .dmp as
+  it is - and attach the zip to a bug report on the Issues page. It
+  is the single most useful thing you can send.
+
+
+REQUIREMENTS
+
+  Windows 10 or 11, 64-bit. Nothing else needs installing - no
+  Visual C++ redistributable, no runtime, no framework.
+
+  For the plugin: any VST3 host. Tested against Ableton Live 12 Lite.
+
+
+GETTING IN TOUCH
+
+  Bugs, questions and things that sound wrong:
+
+      https://github.com/mrdatacommando/WaveLathe/issues
+
+================================================================

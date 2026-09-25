@@ -1,0 +1,2381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WaveLathe User Guide</title>
+<meta name="description" content="The complete user guide to WaveLathe, a wavetable synthesiser for Windows, as a VST3 plugin and a standalone application.">
+<style>
+/* ---------------------------------------------------------------------------
+   WaveLathe User Guide — stylesheet
+
+   Print-first. The PDF is the deliverable; the screen view is the same
+   document with a dark theme over it. Type and colour are taken from the
+   instrument itself: DIN-like panel lettering for headings, the panel cyan
+   and the envelope-display amber as the two accents.
+--------------------------------------------------------------------------- */
+
+:root {
+  --ink:        #14181d;
+  --ink-soft:   #48535e;
+  --muted:      #6b7681;
+  --paper:      #ffffff;
+  --panel:      #f5f7f8;
+  --panel-edge: #e2e7ea;
+  --rule:       #d7dde1;
+  --cyan:       #0e7c7b;
+  --cyan-bright:#2aa8a4;
+  --cyan-wash:  #e8f5f4;
+  --amber:      #a95f0d;
+  --amber-wash: #fdf3e6;
+  --warn:       #9c2f2f;
+  --warn-wash:  #fbeeee;
+
+  --display: "Bahnschrift", "DIN Alternate", "Segoe UI Semibold", "Franklin Gothic Medium", system-ui, sans-serif;
+  --body:    "Segoe UI", -apple-system, system-ui, "Helvetica Neue", Arial, sans-serif;
+  --mono:    "Consolas", "Cascadia Mono", "SFMono-Regular", "Menlo", monospace;
+}
+
+@media screen and (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ink:        #e6ecf0;
+    --ink-soft:   #b3bfc9;
+    --muted:      #8593a0;
+    --paper:      #0e1216;
+    --panel:      #161c22;
+    --panel-edge: #232c34;
+    --rule:       #273139;
+    --cyan:       #4dd0c4;
+    --cyan-bright:#6fe0d6;
+    --cyan-wash:  #10262a;
+    --amber:      #e0a45c;
+    --amber-wash: #241c11;
+    --warn:       #e08585;
+    --warn-wash:  #2a1618;
+  }
+}
+:root[data-theme="dark"] {
+  --ink:        #e6ecf0;
+  --ink-soft:   #b3bfc9;
+  --muted:      #8593a0;
+  --paper:      #0e1216;
+  --panel:      #161c22;
+  --panel-edge: #232c34;
+  --rule:       #273139;
+  --cyan:       #4dd0c4;
+  --cyan-bright:#6fe0d6;
+  --cyan-wash:  #10262a;
+  --amber:      #e0a45c;
+  --amber-wash: #241c11;
+  --warn:       #e08585;
+  --warn-wash:  #2a1618;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 0 16px 6rem;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 10.6pt;
+  line-height: 1.62;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+main { max-width: 52rem; margin: 0 auto; }
+
+/* ---- Type scale -------------------------------------------------------- */
+
+h1, h2, h3, h4 {
+  font-family: var(--display);
+  font-weight: 600;
+  text-wrap: balance;
+  margin: 0;
+}
+
+h1 { font-size: 30pt; line-height: 1.1; letter-spacing: -0.01em; }
+
+h2 {
+  font-size: 17pt;
+  letter-spacing: 0.005em;
+  margin: 2.6rem 0 0.9rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 2px solid var(--cyan);
+}
+
+h3 {
+  font-size: 12.5pt;
+  margin: 1.7rem 0 0.5rem;
+  color: var(--ink);
+}
+
+h4 {
+  font-size: 10.6pt;
+  margin: 1.1rem 0 0.3rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--muted);
+}
+
+p { margin: 0 0 0.8rem; }
+a { color: var(--cyan); }
+
+strong { font-weight: 600; }
+
+code, kbd, .mono {
+  font-family: var(--mono);
+  font-size: 0.9em;
+}
+
+code {
+  background: var(--panel);
+  border: 1px solid var(--panel-edge);
+  border-radius: 3px;
+  padding: 0.05em 0.35em;
+}
+
+kbd {
+  background: var(--panel);
+  border: 1px solid var(--rule);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  padding: 0.1em 0.45em;
+  font-size: 0.85em;
+  white-space: nowrap;
+}
+
+ul, ol { margin: 0 0 0.9rem; padding-left: 1.3rem; }
+li { margin-bottom: 0.25rem; }
+
+/* ---- Cover ------------------------------------------------------------- */
+
+.cover {
+  padding: 3.5rem 0 2rem;
+  border-bottom: 3px solid var(--ink);
+  margin-bottom: 2rem;
+}
+
+.cover .eyebrow {
+  font-family: var(--display);
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  font-size: 9pt;
+  color: var(--cyan);
+  margin-bottom: 0.9rem;
+}
+
+.cover h1 .lathe { color: var(--cyan); }
+
+.cover .standfirst {
+  font-size: 12.5pt;
+  line-height: 1.5;
+  color: var(--ink-soft);
+  max-width: 34rem;
+  margin: 1rem 0 1.6rem;
+}
+
+.cover-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2.2rem;
+  font-size: 9.2pt;
+}
+
+.cover-meta div { min-width: 7rem; }
+
+.cover-meta dt {
+  font-family: var(--display);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  font-size: 8pt;
+  margin-bottom: 0.15rem;
+}
+
+.cover-meta dd { margin: 0; font-weight: 600; }
+
+/* ---- Contents ---------------------------------------------------------- */
+
+.toc { columns: 2; column-gap: 2.5rem; font-size: 9.6pt; }
+.toc ol { list-style: none; padding: 0; margin: 0; }
+.toc li { margin-bottom: 0.3rem; break-inside: avoid; }
+.toc .num {
+  font-family: var(--mono);
+  color: var(--cyan);
+  font-size: 0.86em;
+  margin-right: 0.5rem;
+}
+
+/* ---- Figures ----------------------------------------------------------- */
+
+figure {
+  margin: 1.4rem 0;
+  break-inside: avoid;
+}
+
+figure img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border: 1px solid var(--panel-edge);
+  border-radius: 4px;
+}
+
+figure svg { width: 100%; height: auto; display: block; }
+
+/* A cropped detail - a menu, a corner of a page - drawn nearer its own size
+   rather than blown up to the column. */
+figure.narrow img { width: 62%; }
+
+figcaption {
+  font-size: 8.8pt;
+  color: var(--muted);
+  margin-top: 0.5rem;
+  line-height: 1.45;
+}
+
+figcaption b { color: var(--ink-soft); font-weight: 600; }
+
+/* ---- Tables ------------------------------------------------------------ */
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 9.3pt;
+  margin: 0.9rem 0 1.3rem;
+}
+
+th {
+  font-family: var(--display);
+  text-align: left;
+  font-weight: 600;
+  font-size: 8.6pt;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  border-bottom: 1.5px solid var(--rule);
+  padding: 0.35rem 0.6rem 0.35rem 0;
+  vertical-align: bottom;
+}
+
+td {
+  border-bottom: 1px solid var(--rule);
+  padding: 0.35rem 0.6rem 0.35rem 0;
+  vertical-align: top;
+}
+
+td:last-child, th:last-child { padding-right: 0; }
+
+tbody tr:last-child td { border-bottom: none; }
+
+table.compact td, table.compact th { padding-top: 0.22rem; padding-bottom: 0.22rem; }
+
+.num-col { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.steps { font-family: var(--mono); font-size: 8.8pt; letter-spacing: 0.06em; white-space: nowrap; }
+.pname { font-family: var(--mono); font-size: 8.8pt; white-space: nowrap; }
+
+/* A row-group heading inside a long table. */
+tr.group td {
+  font-family: var(--display);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 8.2pt;
+  color: var(--cyan);
+  padding-top: 0.8rem;
+  border-bottom: 1px solid var(--cyan);
+}
+
+/* ---- Callouts ---------------------------------------------------------- */
+
+.note, .warn, .plugin, .standalone {
+  border-left: 3px solid var(--cyan);
+  background: var(--cyan-wash);
+  padding: 0.7rem 0.9rem;
+  margin: 1rem 0;
+  font-size: 9.6pt;
+  break-inside: avoid;
+  border-radius: 0 3px 3px 0;
+}
+
+.note p:last-child, .warn p:last-child,
+.plugin p:last-child, .standalone p:last-child { margin-bottom: 0; }
+
+.warn { border-left-color: var(--warn); background: var(--warn-wash); }
+.plugin { border-left-color: var(--amber); background: var(--amber-wash); }
+.standalone { border-left-color: var(--amber); background: var(--amber-wash); }
+
+.tag {
+  font-family: var(--display);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 7.8pt;
+  font-weight: 600;
+  display: inline-block;
+  margin-right: 0.45rem;
+  padding: 0.05em 0.45em;
+  border-radius: 2px;
+  vertical-align: 0.08em;
+}
+
+.plugin .tag { background: var(--amber); color: var(--paper); }
+.standalone .tag { background: var(--amber); color: var(--paper); }
+.note .tag { background: var(--cyan); color: var(--paper); }
+.warn .tag { background: var(--warn); color: var(--paper); }
+
+/* ---- Panel badges, matching the numbers printed in the interface ------- */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25em;
+  height: 1.25em;
+  border-radius: 50%;
+  background: var(--cyan);
+  color: var(--paper);
+  font-family: var(--display);
+  font-size: 0.82em;
+  font-weight: 600;
+  vertical-align: 0.06em;
+  /* No trailing margin: a badge is followed as often by punctuation, as in
+     "sections 1-6.", as it is by a label. Where a gap is wanted the markup
+     carries a real space, which is the only place it belongs. */
+  margin-right: 0;
+}
+
+.badge.amb { background: var(--amber); }
+
+/* ---- Definition-style parameter lists ---------------------------------- */
+
+.params { margin: 0.8rem 0 1.2rem; }
+
+.params dt {
+  font-family: var(--mono);
+  font-size: 9.2pt;
+  font-weight: 600;
+  color: var(--cyan);
+  margin-top: 0.55rem;
+}
+
+.params dd {
+  margin: 0.1rem 0 0;
+  font-size: 9.7pt;
+  color: var(--ink-soft);
+}
+
+/* ---- Key/legend grid --------------------------------------------------- */
+
+.legend {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  gap: 0.4rem 1.4rem;
+  font-size: 9.4pt;
+  margin: 0.9rem 0 1.2rem;
+}
+
+.legend div { display: flex; gap: 0.6rem; align-items: baseline; }
+
+.legend .glyph {
+  font-family: var(--mono);
+  font-weight: 700;
+  color: var(--cyan);
+  min-width: 1.1rem;
+  font-size: 10.5pt;
+}
+
+/* ---- Print ------------------------------------------------------------- */
+
+@page {
+  size: A4;
+  margin: 17mm 15mm 16mm;
+}
+
+@media print {
+  body { padding: 0; font-size: 9.6pt; }
+  main { max-width: none; }
+  h2 { break-after: avoid; break-before: page; }
+  h2.no-break { break-before: auto; }
+  h3, h4 { break-after: avoid; }
+  table, figure, .note, .warn, .plugin, .standalone { break-inside: avoid; }
+  tr { break-inside: avoid; }
+  .cover { break-after: page; border-bottom-width: 2px; }
+  .toc-section { break-after: page; }
+  a { color: var(--ink); text-decoration: none; }
+  .screen-only { display: none; }
+}
+
+@media screen {
+  .print-only { display: none; }
+}
+
+/* ---- Footer ------------------------------------------------------------ */
+
+.colophon {
+  margin-top: 3rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--rule);
+  font-size: 8.8pt;
+  color: var(--muted);
+}
+</style>
+</head>
+<body>
+<main>
+
+<!-- ====================================================================== -->
+<!-- COVER                                                                   -->
+<!-- ====================================================================== -->
+
+<header class="cover">
+  <div class="eyebrow">User Guide</div>
+  <h1>Wave<span class="lathe">Lathe</span></h1>
+  <p class="standfirst">
+    A wavetable synthesiser for Windows — two oscillators with a sub and noise,
+    a multi-mode filter, an arpeggiator, a piano-roll step sequencer, a
+    twelve-slot drum machine, bus effects and a mastering chain over the whole
+    mix, and a sound matcher that fits a patch to a recording.
+  </p>
+  <dl class="cover-meta">
+    <div><dt>Version</dt><dd id="guide-version">0.49.0</dd></div>
+    <div><dt>Formats</dt><dd>VST3 &amp; Standalone</dd></div>
+    <div><dt>Platform</dt><dd>Windows 10 / 11, 64-bit</dd></div>
+    <div><dt>Licence</dt><dd>Free &amp; open source — GNU AGPL v3</dd></div>
+    <div><dt>Source</dt><dd>github.com/mrdatacommando/WaveLathe</dd></div>
+    <div><dt>Bugs &amp; questions</dt><dd>Issues, on the GitHub page</dd></div>
+  </dl>
+</header>
+
+<!-- ====================================================================== -->
+<!-- CONTENTS                                                                -->
+<!-- ====================================================================== -->
+
+<section class="toc-section">
+<h2 class="no-break" id="contents">Contents</h2>
+<nav class="toc">
+  <ol>
+    <li><span class="num">1</span><a href="#installing">Installing</a></li>
+    <li><span class="num">2</span><a href="#glance">The window at a glance</a></li>
+    <li><span class="num">3</span><a href="#first-sound">Your first sound</a></li>
+    <li><span class="num">4</span><a href="#two-formats">Standalone and plugin</a></li>
+    <li><span class="num">5</span><a href="#voice">The voice signal chain</a></li>
+    <li><span class="num">6</span><a href="#modulation">Modulation</a></li>
+    <li><span class="num">7</span><a href="#effects">Master effects</a></li>
+    <li><span class="num">8</span><a href="#arp">The arpeggiator</a></li>
+    <li><span class="num">9</span><a href="#sequencer">The step sequencer</a></li>
+    <li><span class="num">10</span><a href="#drums">The drum machine</a></li>
+    <li><span class="num">11</span><a href="#master">The Master page</a></li>
+    <li><span class="num">12</span><a href="#play-in-key">Play in Key</a></li>
+    <li><span class="num">13</span><a href="#tempo">Tempo and sync</a></li>
+    <li><span class="num">14</span><a href="#midi">MIDI</a></li>
+    <li><span class="num">15</span><a href="#matching">Sound matching</a></li>
+    <li><span class="num">16</span><a href="#presets">Synth presets and projects</a></li>
+    <li><span class="num">17</span><a href="#keyboard">The computer keyboard</a></li>
+    <li><span class="num">18</span><a href="#reference">Reference tables</a></li>
+    <li><span class="num">19</span><a href="#limits">Known limitations</a></li>
+    <li><span class="num">20</span><a href="#trouble">Troubleshooting</a></li>
+  </ol>
+</nav>
+</section>
+
+<!-- ====================================================================== -->
+<!-- 1. INSTALLING                                                           -->
+<!-- ====================================================================== -->
+
+<section>
+<h2 id="installing">1 · Installing</h2>
+
+<p>
+  WaveLathe needs Windows 10 or 11, 64-bit. There is no macOS or Linux build.
+  Nothing else has to be installed first — the C++ runtime is built into every
+  file, so they run on a machine that has never had a development tool or a
+  Microsoft redistributable on it.
+</p>
+
+<p>
+  Download it from <strong>github.com/mrdatacommando/WaveLathe</strong>. The
+  <em>Download</em> link near the top of that page gets the newest release as
+  one zip, with no account needed, and unzipping it is the whole installation.
+  The source code is in the same place, if you would rather build WaveLathe
+  yourself; the page below the link says how.
+</p>
+
+<p>The package holds two products, each as a standalone and a plugin:</p>
+
+<table class="compact">
+  <thead><tr><th style="width:11rem">File</th><th>What it is</th></tr></thead>
+  <tbody>
+    <tr><td class="pname">WaveLathe.exe</td><td>The synthesiser and drum machine, as an application of its own.</td></tr>
+    <tr><td class="pname">VST3\WaveLathe.vst3</td><td>The same instrument, as a plugin for your DAW.</td></tr>
+    <tr><td class="pname">WaveLathe Master.exe</td><td>The mastering chain from the Master page, as an application of its own. See section 11.</td></tr>
+    <tr><td class="pname">VST3\WaveLathe Master.vst3</td><td>The same mastering chain, as an effect plugin for a mix bus.</td></tr>
+  </tbody>
+</table>
+
+<p>
+  Beside them are this guide, a <code>READ ME FIRST</code>, the changelog, the
+  licence, and the licences of the components WaveLathe is built with.
+</p>
+
+<h3>The standalone</h3>
+
+<p>
+  <code>WaveLathe.exe</code> needs no installation. Put it wherever you like
+  and run it. The first thing to do is open
+  <strong>Options → Audio / MIDI Settings</strong> and choose your output
+  device; until you do, you may get no sound at all.
+</p>
+
+<h3>The plugins</h3>
+
+<p>
+  Copy the <code>.vst3</code> bundles you want into the folder your host scans
+  for VST3 plugins. On Windows that is normally:
+</p>
+
+<p><code>C:\Program Files\Common Files\VST3\</code></p>
+
+<p>
+  Copying there needs administrator rights. If you would rather not elevate,
+  most hosts let you add a plugin folder of your own and scan that instead.
+  Then rescan in your host. WaveLathe appears as an instrument, and WaveLathe
+  Master as an effect.
+</p>
+
+<div class="note">
+  <p>
+    <span class="tag">Note</span>
+    After replacing the <code>.vst3</code> file with a newer build, rescan
+    before you open a project that uses it. A host that has cached the old
+    scan will keep reporting the old version.
+  </p>
+</div>
+
+<h3>If Windows warns you</h3>
+
+<p>
+  WaveLathe is not code-signed, so Windows SmartScreen may show
+  <em>“Windows protected your PC”</em> the first time you run it. Choose
+  <strong>More info → Run anyway</strong>. That message is what an unsigned
+  application looks like; it is not a report of anything found in the file.
+</p>
+</section>
+
+<!-- ====================================================================== -->
+<!-- 2. AT A GLANCE                                                          -->
+<!-- ====================================================================== -->
+
+<section>
+<h2 id="glance">2 · The window at a glance</h2>
+
+<p>
+  WaveLathe has four pages, chosen with the tabs at the top left. Everything
+  else — the displays across the top, the reading strip, the transport, the
+  keyboard and the arpeggiator — stays in place on all four.
+</p>
+
+<table class="compact">
+  <thead><tr><th style="width:7rem">Page</th><th>What it holds</th></tr></thead>
+  <tbody>
+    <tr><td class="pname">Synth</td><td>The sound: the voice signal chain, the synth's own effects and the modulation. Sections 5–7.</td></tr>
+    <tr><td class="pname">Sequencer</td><td>The pattern: a note grid for the synth, a drum grid for the kit, and automation lanes for both. Section 9.</td></tr>
+    <tr><td class="pname">Drums</td><td>The kit: twelve mixer strips and the effects rack they send to. Section 10.</td></tr>
+    <tr><td class="pname">Master</td><td>The whole mix: bus effects over the synth and drums together, then the mastering chain. Section 11.</td></tr>
+  </tbody>
+</table>
+
+<figure>
+  <img src="images/main-window.png" alt="The WaveLathe Synth page with the Acid Line preset loaded and a pattern playing: waveform and envelope previews and a live output scope across the top, the voice signal chain on the left, master effects and modulation on the right, and the keyboard and arpeggiator along the bottom.">
+  <figcaption>
+    <b>The Synth page</b>, with the factory preset Acid Line playing a
+    pattern. The numbered badges are printed in the interface itself and are
+    used throughout this guide. <b>1–6</b> are the voice signal chain, on the
+    left. <b>7–13</b> are the master effects, top right. Modulation sits
+    underneath them. The reading strip above the keyboard tells you what just
+    happened.
+  </figcaption>
+</figure>
+
+<p>Reading the window from the top:</p>
+
+<dl class="params">
+  <dt>Waveform &amp; Envelope</dt>
+  <dd>
+    A preview of the current patch — one cycle of the wavetable at its current
+    position, and the shape the amplitude envelope will trace. Both update as
+    you turn dials, so you can see what a control does before you play a note.
+    They follow the page: the Drums page shows the drum you are working on, and
+    the Master page shows a note through the whole mix (sections 10 and 11).
+  </dd>
+
+  <dt>Out</dt>
+  <dd>
+    A live scope of everything leaving WaveLathe, synth and drums together,
+    with a level meter and a <strong>CLIP</strong> indicator on the right.
+    Press <strong>SPECTRUM &gt;</strong> to swap the scope for a frequency
+    display with an EQ response drawn over it — the synth's EQ, labelled
+    SYNTH EQ, or on the Master page the bus EQ, labelled BUS EQ.
+  </dd>
+
+  <dt>Voice Signal Chain</dt>
+  <dd>
+    Sections <span class="badge">1</span>–<span class="badge">6</span>.
+    Everything that happens per note, in the order it happens.
+  </dd>
+
+  <dt>Master Effects</dt>
+  <dd>
+    Sections <span class="badge">7</span>–<span class="badge">13</span>.
+    The synth's own effects, applied once to the mixed output of every voice,
+    not per note. The drums do not pass through them.
+  </dd>
+
+  <dt>Modulation</dt>
+  <dd>
+    Two LFOs, a second envelope free to be routed, and the Expression block
+    that decides how playing itself shapes the sound.
+  </dd>
+
+  <dt>Reading strip</dt>
+  <dd>
+    The green text above the keyboard. It reports what you just did and what
+    the synth is waiting for. Worth glancing at when something does not behave
+    as expected.
+  </dd>
+
+  <dt>Keyboard</dt>
+  <dd>
+    Click it, or play your computer keyboard (section 17), or play a MIDI
+    controller. <strong>Oct −</strong> and <strong>Oct +</strong> shift the
+    range; <strong>Hold note</strong> latches whatever is sounding. On the
+    Drums page the keyboard and the arpeggiator are dimmed, because neither
+    plays the kit — they still work, so you can check the patch without
+    leaving the page.
+  </dd>
+</dl>
+
+<div class="note">
+  <p>
+    <span class="tag">Tip</span>
+    <kbd>F11</kbd> goes full screen, and <kbd>Esc</kbd> comes back.
+    <kbd>Ctrl</kbd>+<kbd>Z</kbd> and <kbd>Ctrl</kbd>+<kbd>Y</kbd> undo and redo
+    across the whole project, including sequencer edits.
+  </p>
+</div>
+</section>
+
+<!-- ====================================================================== -->
+<!-- 3. FIRST SOUND                                                          -->
+<!-- ====================================================================== -->
+
+<section>
+<h2 id="first-sound">3 · Your first sound</h2>
+
+<ol>
+  <li>
+    <strong>Standalone only:</strong> open <strong>Options → Audio / MIDI
+    Settings</strong> and pick an output device.
+  </li>
+  <li>
+    Open <strong>Options → Browse Synth Presets…</strong> and choose something
+    from the list. There are 65 to start from, grouped by category.
+  </li>
+  <li>
+    Play the on-screen keyboard with the mouse, or press
+    <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> <kbd>F</kbd> on your computer
+    keyboard.
+  </li>
+  <li>
+    Turn <strong>Cutoff</strong> in the Filter section
+    <span class="badge">4</span> while you hold a note. That one dial is the
+    fastest way to hear what a patch is made of.
+  </li>
+  <li>
+    Switch <strong>Arpeggiator → On</strong> at the bottom right, hold three or
+    four notes down, and try a different pattern.
+  </li>
+  <li>
+    For a beat under it, open the <strong>Sequencer</strong> page, press
+    <strong>Drums</strong> above the grid, and click a kick onto every beat and
+    a clap onto two and four. Press <strong>Play</strong>.
+  </li>
+</ol>
+
+<p>
+  To start from nothing instead, choose <strong>Options → Init Synth
+  Patch</strong>. That gives you a single sine oscillator with the filter wide
+  open — the plainest thing the synth can make, and a good place to build from.
+  It resets the sound only; your pattern, your kit and the Master page are left
+  as they are.
+</p>
+</section>
+
+<!-- ====================================================================== -->
+<!-- 4. TWO FORMATS                                                          -->
+<!-- ====================================================================== -->
+
+<section>
+<h2 id="two-formats">4 · Standalone and plugin</h2>
+
+<p>
+  The two builds are the same synthesiser. What differs is who owns the things
+  a synth cannot own by itself: the audio device, the tempo, and the preset
+  menu.
+</p>
+
+<table>
+  <thead>
+    <tr><th style="width:12rem">&nbsp;</th><th>Standalone</th><th>Plugin (VST3)</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Audio device</strong></td>
+      <td>Chosen in Options → Audio / MIDI Settings</td>
+      <td>The host's. The menu item does nothing useful and is not shown.</td>
+    </tr>
+    <tr>
+      <td><strong>Tempo</strong></td>
+      <td>The BPM dial, or incoming MIDI clock</td>
+      <td>Always the host's. The readout shows it marked <code>ext</code>.</td>
+    </tr>
+    <tr>
+      <td><strong>MIDI in</strong></td>
+      <td>Devices chosen in Audio / MIDI Settings</td>
+      <td>Routed by the host to the plugin's track</td>
+    </tr>
+    <tr>
+      <td><strong>Synth presets</strong></td>
+      <td>Options → Browse Synth Presets…</td>
+      <td>The same browser, plus all 65 in the host's own program menu</td>
+    </tr>
+    <tr>
+      <td><strong>Automation</strong></td>
+      <td>MIDI Learn only</td>
+      <td>171 named parameters the host can automate — 63 for the synth and 108 for the drum kit — plus MIDI Learn</td>
+    </tr>
+    <tr>
+      <td><strong>Saving</strong></td>
+      <td>Projects (<code>.wlp</code>) and synth presets (<code>.fxp</code>)</td>
+      <td>The same, plus the whole project is stored inside the host's own session</td>
+    </tr>
+    <tr>
+      <td><strong>Latency</strong></td>
+      <td>About 1.6 ms, from the mastering chain. Nothing to set.</td>
+      <td>Reported to the host, which compensates for it — the same whether mastering is on or off</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="plugin">
+  <p>
+    <span class="tag">Plugin</span>
+    <strong>Choosing a preset changes the sound only</strong>, whether you pick
+    it from your host's program menu or from WaveLathe's own browser. Your
+    pattern, your kit, the tempo and the Master page are left alone — in a
+    plugin the host owns the transport, and a sound is not a song.
+  </p>
+</div>
+
+<div class="standalone">
+  <p>
+    <span class="tag">Standalone</span>
+    <strong>Options → Follow MIDI Clock</strong> slaves the tempo to clock
+    arriving from hardware — a groovebox, a drum machine, another DAW. It has
+    no effect in the plugin, where the host's tempo always wins.
+  </p>
+</div>
+</section>
+
+<!-- ====================================================================== -->
+<!-- 5. VOICE SIGNAL CHAIN                                                   -->
+<!-- ====================================================================== -->
+
+<section>
+<h2 id="voice">5 · The voice signal chain</h2>
+
+<p>
+  Every note played builds its own copy of this chain. The four sound sources
+  are mixed, passed through the filter, then through the drive stage, and
+  finally shaped by the amplitude envelope.
+</p>
+
+<figure>
+<svg viewBox="0 0 760 250" role="img" aria-label="Signal flow: oscillator 1, oscillator 2, sub and noise mix together, then pass through the filter, then drive, then the amplitude envelope, and on into the shared master effects chain." xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/>
+    </marker>
+  </defs>
+  <g fill="none" stroke="currentColor" stroke-width="1.2" marker-end="url(#ar)">
+    <path d="M118 34 L196 34 L196 96"/>
+    <path d="M118 74 L176 74 L176 96"/>
+    <path d="M118 114 L196 114 L196 100" marker-end=""/>
+    <path d="M118 154 L176 154 L176 100" marker-end=""/>
+    <path d="M186 108 L246 108"/>
+    <path d="M330 108 L390 108"/>
+    <path d="M474 108 L534 108"/>
+    <path d="M618 108 L672 108"/>
+    <path d="M700 130 L700 176 L96 176 L96 196"/>
+  </g>
+  <g font-family="Bahnschrift, Segoe UI Semibold, sans-serif" font-size="12" fill="currentColor">
+    <g stroke="currentColor" stroke-width="1.2" fill="none">
+      <rect x="18" y="20" width="100" height="28" rx="3"/>
+      <rect x="18" y="60" width="100" height="28" rx="3"/>
+      <rect x="18" y="100" width="100" height="28" rx="3"/>
+      <rect x="18" y="140" width="100" height="28" rx="3"/>
+    </g>
+    <text x="30" y="38">Oscillator 1</text>
+    <text x="30" y="78">Oscillator 2</text>
+    <text x="30" y="118">Sub</text>
+    <text x="30" y="158">Noise</text>
+
+    <g stroke="#2aa8a4" stroke-width="1.6" fill="none">
+      <rect x="246" y="90" width="84" height="36" rx="3"/>
+      <rect x="390" y="90" width="84" height="36" rx="3"/>
+      <rect x="534" y="90" width="84" height="36" rx="3"/>
+    </g>
+    <text x="268" y="113" fill="#2aa8a4">Filter</text>
+    <text x="418" y="113" fill="#2aa8a4">Drive</text>
+    <text x="548" y="113" fill="#2aa8a4">Amp Env</text>
+
+    <g stroke="currentColor" stroke-width="1.2" fill="none" stroke-dasharray="4 3">
+      <rect x="672" y="90" width="72" height="40" rx="3"/>
+    </g>
+    <text x="686" y="107" font-size="10">one voice</text>
+    <text x="692" y="121" font-size="10">of many</text>
+
+    <g stroke="#a95f0d" stroke-width="1.6" fill="none">
+      <rect x="18" y="196" width="726" height="38" rx="3"/>
+    </g>
+    <text x="34" y="220" fill="#a95f0d">Master effects</text>
+    <text x="150" y="220" font-size="11" fill="currentColor">Distortion → Chorus → Phaser → Delay → Reverb → EQ → Output Gain</text>
+  </g>
+  <g font-family="Consolas, monospace" font-size="9.5" fill="currentColor" opacity="0.75">
+    <text x="196" y="86" text-anchor="middle">mix</text>
+  </g>
+</svg>
+<figcaption>
+  <b>Signal flow.</b> The four sources mix, then the filter, then drive, then
+  the envelope. The master chain runs once over every voice together — which is
+  why turning the reverb up does not cost more as you play more notes.
+</figcaption>
+</figure>
+
+<h3><span class="badge">1</span> <span class="badge">2</span> Oscillator 1 and 2</h3>
+
+<p>
+  Both oscillators read the same wavetable, but each has its own position in
+  it. <strong>Wave</strong> sweeps through the table — this is the
+  characteristic wavetable control, and the one worth modulating.
+</p>
+
+<dl class="params">
+  <dt>Level</dt><dd>How much of this oscillator reaches the mix.</dd>
+  <dt>Wave</dt><dd>Position in the wavetable, 0–100%.</dd>
+  <dt>Voices</dt><dd>Unison, 1 to 7 copies of the oscillator stacked together.</dd>
+  <dt>Detune</dt><dd>How far apart those copies are tuned, up to 50 cents. Zero with Voices at 1 does nothing.</dd>
+  <dt>Width</dt><dd>How far the unison copies are spread across the stereo field.</dd>
+  <dt>Semi / Fine</dt><dd>Oscillator 2 only. ±24 semitones and ±100 cents against oscillator 1.</dd>
+  <dt>Glide</dt><dd>Time taken to slide from one note's pitch to the next, up to 2 seconds. <code>off</code> jumps.</dd>
+  <dt>Mono / Legato</dt><dd>Mono keeps one note sounding at a time. Legato then lets an overlapping note take over <em>without</em> restarting the envelope — which is what makes a bassline join up instead of stutter. Legato does nothing unless Mono is on.</dd>
+</dl>
+
+<h3><span class="badge">3</span> Sub &amp; Noise</h3>
+
+<p>
+  Two sources that sit underneath the oscillators. The sub is a clean tone one
+  or two octaves down — the fastest way to give a patch weight. Noise has no
+  pitch at all and is what breath, wind and percussion attacks are made of.
+</p>
+
+<dl class="params">
+  <dt>Sub / Sub Wave / Sub Oct</dt><dd>Level, sine or square, and one or two octaves below the played note.</dd>
+  <dt>Noise / Colour</dt><dd>Level, and white through to pink. Pink is darker and sits under a sound more easily.</dd>
+</dl>
+
+<h3><span class="badge">4</span> Filter</h3>
+
+<p>
+  Five types. <strong>Cutoff</strong> is where it acts and
+  <strong>Reso</strong> is how much it emphasises that point — past about 70%
+  the filter begins to ring, which is the sound of most electronic bass and
+  lead patches.
+</p>
+
+<figure>
+<svg viewBox="0 0 700 180" role="img" aria-label="Filter response shapes: low-pass 12 and 24 decibel roll off above the cutoff, high-pass rolls off below it, band-pass keeps a band around it, and notch removes a band at it." xmlns="http://www.w3.org/2000/svg">
+  <g stroke="currentColor" stroke-width="1" opacity="0.28">
+    <line x1="20" y1="140" x2="680" y2="140"/>
+  </g>
+  <g fill="none" stroke-width="2">
+    <path d="M20 60 L86 60 Q110 60 118 140" stroke="#2aa8a4"/>
+    <path d="M160 60 L226 60 Q240 60 244 140" stroke="#2aa8a4" stroke-dasharray="5 3"/>
+    <path d="M420 140 Q426 60 448 60 L494 60" stroke="#2aa8a4"/>
+    <path d="M300 140 Q330 58 352 58 Q374 58 400 140" stroke="#2aa8a4"/>
+    <path d="M540 60 L580 60 Q596 60 604 108 Q612 60 628 60 L668 60" stroke="#2aa8a4"/>
+  </g>
+  <g font-family="Bahnschrift, Segoe UI Semibold, sans-serif" font-size="11" fill="currentColor" text-anchor="middle">
+    <text x="70" y="166">LP 12</text>
+    <text x="205" y="166">LP 24</text>
+    <text x="350" y="166">BP 12</text>
+    <text x="460" y="166">HP 12</text>
+    <text x="604" y="166">Notch</text>
+  </g>
+  <g font-family="Consolas, monospace" font-size="9" fill="currentColor" opacity="0.6" text-anchor="middle">
+    <text x="350" y="24">frequency →</text>
+  </g>
+</svg>
+<figcaption>
+  <b>What each filter type keeps.</b> LP 24 is the same shape as LP 12 but
+  twice as steep, so it cuts harder just above the cutoff. Notch is the
+  opposite of band-pass — it removes a narrow band and leaves everything else.
+</figcaption>
+</figure>
+
+<table class="compact">
+  <thead><tr><th style="width:5rem">Type</th><th>What it does</th></tr></thead>
+  <tbody>
+    <tr><td class="pname">LP 12</td><td>Low-pass, 12 dB/octave. Keeps the lows, gently removes the highs. The default, and what most patches want.</td></tr>
+    <tr><td class="pname">LP 24</td><td>Low-pass, 24 dB/octave. The same but twice as steep — darker and more dramatic as you close it.</td></tr>
+    <tr><td class="pname">HP 12</td><td>High-pass. Removes the lows. Thins a sound out, or makes room under it for a bass.</td></tr>
+    <tr><td class="pname">BP 12</td><td>Band-pass. Keeps only a band around the cutoff. Nasal, telephone-like, good with resonance.</td></tr>
+    <tr><td class="pname">Notch</td><td>Removes a band at the cutoff and leaves the rest. Sweep it for a hollow, phasing movement.</td></tr>
+  </tbody>
+</table>
+
+<h3><span class="badge">5</span> Drive</h3>
+
+<p>
+  A soft clipper that runs <strong>after</strong> the filter, inside each voice.
+  Because it is per voice rather than on the master bus, a chord driven here
+  distorts note by note rather than as a lump — which stays clearer than the
+  master Distortion in section <span class="badge">7</span>.
+</p>
+
+<h3><span class="badge">6</span> Amp Envelope</h3>
+
+<p>
+  The shape of a note's loudness from the moment the key goes down to after it
+  comes up again.
+</p>
+
+<figure>
+<svg viewBox="0 0 640 210" role="img" aria-label="An ADSR envelope: attack rises from silence to full, decay falls to the sustain level, sustain holds while the key is held, and release falls back to silence after the key is let go." xmlns="http://www.w3.org/2000/svg">
+  <g stroke="currentColor" stroke-width="1" opacity="0.25">
+    <line x1="60" y1="160" x2="600" y2="160"/>
+    <line x1="60" y1="40" x2="600" y2="40" stroke-dasharray="3 4"/>
+    <line x1="60" y1="96" x2="600" y2="96" stroke-dasharray="3 4"/>
+  </g>
+  <path d="M60 160 L150 40 L250 96 L400 96 L500 160" fill="none" stroke="#2aa8a4" stroke-width="2.5"/>
+  <path d="M60 160 L150 40 L250 96 L400 96 L500 160 L500 160 L60 160 Z" fill="#2aa8a4" opacity="0.08"/>
+  <g stroke="currentColor" stroke-width="1" opacity="0.45" stroke-dasharray="3 3">
+    <line x1="150" y1="40" x2="150" y2="172"/>
+    <line x1="250" y1="96" x2="250" y2="172"/>
+    <line x1="400" y1="96" x2="400" y2="172"/>
+    <line x1="500" y1="160" x2="500" y2="172"/>
+  </g>
+  <g font-family="Bahnschrift, Segoe UI Semibold, sans-serif" font-size="11.5" fill="currentColor" text-anchor="middle">
+    <text x="105" y="190">Attack</text>
+    <text x="200" y="190">Decay</text>
+    <text x="325" y="190">Sustain</text>
+    <text x="450" y="190">Release</text>
+  </g>
+  <g font-family="Consolas, monospace" font-size="9" fill="currentColor" opacity="0.65">
+    <text x="16" y="44">full</text>
+    <text x="4" y="100">sustain</text>
+    <text x="24" y="164">off</text>
+  </g>
+  <g font-family="Consolas, monospace" font-size="9" fill="#a95f0d">
+    <text x="150" y="30" text-anchor="middle">key down</text>
+    <text x="400" y="86" text-anchor="middle">key up</text>
+  </g>
+</svg>
+<figcaption>
+  <b>Attack, Decay, Sustain, Release.</b> Attack, Decay and Release are times;
+  Sustain is a level. A percussive sound has a fast attack and no sustain; a
+  pad has a slow attack and a full one.
+</figcaption>
+</figure>
+</section>
+
+<!-- ====================================================================== -->
+<!-- 6. MODULATION                                                           -->
+<!-- ====================================================================== -->
+
+<section>
+<h2 id="modulation">6 · Modulation</h2>
+
+<p>
+  Modulation is what stops a patch sounding the same on every note and at every
+  moment of a note. WaveLathe has four sources, each with fixed destinations
+  and a depth dial for each.
+</p>
+
+<h3>LFO 1 and LFO 2</h3>
+
+<p>
+  Two low-frequency oscillators, cycling continuously whether or not a note is
+  playing. LFO 1 can reach amplitude as well, which LFO 2 cannot.
+</p>
+
+<table class="compact">
+  <thead><tr><th style="width:7rem">Control</th><th>Destination</th></tr></thead>
+  <tbody>
+    <tr><td class="pname">To Filter</td><td>LFO 1 only. Sweeps the cutoff — the classic wobble.</td></tr>
+    <tr><td class="pname">To Amp</td><td>LFO 1 only. Tremolo.</td></tr>
+    <tr><td class="pname">To Wave</td><td>Both. Sweeps the wavetable position, so the tone itself moves.</td></tr>
+    <tr><td class="pname">To Cutoff</td><td>LFO 2 only. A second, independent filter movement.</td></tr>
+    <tr><td class="pname">Stereo</td><td>LFO 1 only. Runs the LFO a quarter-cycle apart on left and right, so its movement sweeps across the stereo field instead of pumping both channels together.</td></tr>
+    <tr><td class="pname">Sync</td><td>Snaps the rate to a musical division of the tempo instead of running free in Hz.</td></tr>
+  </tbody>
+</table>
+
+<h3>Mod Envelope</h3>
+
+<p>
+  A second ADSR envelope, not wired to loudness. Its two destinations are
+  <strong>bipolar</strong> — turn them left for a downward sweep and right for
+  an upward one.
+</p>
+
+<dl class="params">
+  <dt>To Wave</dt>
+  <dd>Moves the wavetable position over the life of each note. This is the characteristic wavetable gesture: a sound that starts as one waveform and becomes another.</dd>
+  <dt>To Cutoff</dt>
+  <dd>Moves the filter cutoff, measured in octaves. The classic filter sweep, and what gives a pluck its bite or a pad its slow opening.</dd>
+</dl>
+
+<h3>Expression</h3>
+
+<p>
+  How playing itself shapes the sound. Without these, velocity only makes a
+  note louder and the mod wheel does nothing at all.
+</p>
+
+<table class="compact">
+  <thead><tr><th style="width:9rem">Control</th><th>What it does</th></tr></thead>
+  <tbody>
+    <tr><td class="pname">Vel → Cutoff</td><td>Harder playing opens the filter.</td></tr>
+    <tr><td class="pname">Vel → Wave</td><td>Harder playing pushes the wavetable position.</td></tr>
+    <tr><td class="pname">Vel → Amp</td><td>How much velocity sets the level at all. At zero, every note is the same loudness.</td></tr>
+    <tr><td class="pname">Vel → Reso</td><td>Harder playing adds resonance. This is the other half of an accent: opening the filter alone makes a note brighter, but pushing resonance with it is what makes it <em>bite</em>.</td></tr>
+    <tr><td class="pname">Accent</td><td>How hard an accented step hits, as a velocity. One dial for the whole pattern — the per-step accent flag says <em>which</em> notes are accented, this says by how much.</td></tr>
+    <tr><td class="pname">Wheel → Cutoff</td><td>Mod wheel to filter.</td></tr>
+    <tr><td class="pname">Wheel → Wave</td><td>Mod wheel to wavetable position.</td></tr>
+    <tr><td class="pname">Pressure → Cutoff</td><td>Channel aftertouch to filter, for controllers that send it.</td></tr>
+  </tbody>
+</table>
+</section>
+
+<!-- ====================================================================== -->
+<!-- 7. MASTER EFFECTS                                                       -->
+<!-- ====================================================================== -->
+
+<section>
+<h2 id="effects">7 · Master effects</h2>
+
+<p>
+  Applied once to the mixed output of every voice. The order is fixed, and it
+  is the conventional one: drive shapes the dry tone, modulation thickens it,
+  delay repeats that, reverb places it, and the tone control has the last word.
+</p>
+
+<p>
+  These are the <strong>synth's</strong> effects, and they belong to the sound:
+  they are saved in a synth preset, and the drums do not pass through them. The
+  same seven stages appear a second time on the Master page as
+  <strong>bus effects</strong>, over the synth and the drums together — that is
+  where a reverb goes that should put the whole track in one room
+  (section 11).
+</p>
+
+<table>
+  <thead><tr><th style="width:3rem">&nbsp;</th><th style="width:8rem">Effect</th><th>Controls and notes</th></tr></thead>
+  <tbody>
+    <tr><td><span class="badge">7</span></td><td><strong>Distortion</strong></td><td><span class="pname">Amount</span> — soft clipping over the whole mix. Coarser than the per-voice Drive, and that is sometimes what you want.</td></tr>
+    <tr><td><span class="badge">8</span></td><td><strong>Chorus</strong></td><td><span class="pname">Rate · Depth · Mix</span> — mixes the signal with a delayed, moving copy of itself. Widens and thickens.</td></tr>
+    <tr><td><span class="badge">9</span></td><td><strong>Phaser</strong></td><td><span class="pname">Rate · Feedback · Mix</span> — mixes with a phase-shifted copy. Sweeping and hollow rather than thick.</td></tr>
+    <tr><td><span class="badge">10</span></td><td><strong>Delay</strong></td><td><span class="pname">Time · Feedback · Mix · Sync</span> — ping-pong, so repeats alternate across the stereo field. With <strong>Sync</strong> on, Time snaps to a musical division.</td></tr>
+    <tr><td><span class="badge">11</span></td><td><strong>Reverb</strong></td><td><span class="pname">Size · Mix</span> — the space the sound sits in. Some dry signal is kept even at full wet.</td></tr>
+    <tr><td><span class="badge">12</span></td><td><strong>EQ</strong></td><td><span class="pname">Low · Mid · High</span> — a three-band tilt, ±12 dB. Flat at zero, and skipped entirely when all three are flat.</td></tr>
+    <tr><td><span class="badge">13</span></td><td><strong>Output</strong></td><td><span class="pname">Gain</span> — the last thing before the sound leaves. Watch the CLIP indicator.</td></tr>
+  </tbody>
+</table>
+
+<div class="note">
+  <p>
+    <span class="tag">Tip</span>
+    Press <strong>SPECTRUM &gt;</strong> above the scope to see the EQ curve
+    drawn over the actual output. It is much easier to set three bands when you
+    can see what they are doing.
+  </p>
+</div>
+</section>
+
+<!-- ====================================================================== -->
+<!-- 8. ARPEGGIATOR                                                          -->
+<!-- ====================================================================== -->
+
+<section>
+<h2 id="arp">8 · The arpeggiator</h2>
+
+<p>
+  The arpeggiator sits between the keyboard and the synth: hold a chord, and
+  instead of sounding together the notes are played one at a time on a clock.
+  It has <strong>two independent axes</strong>, the way hardware arpeggiators
+  separate them:
+</p>
+
+<ul>
+  <li>The <strong>mode</strong> decides which note comes next — 24 of them.</li>
+  <li>The <strong>pattern</strong> decides the rhythm it is played in — 25 of them, on their own axis.</li>
+</ul>
+
+<p>
+  That separation is where the character comes from. <em>Up</em> played as
+  <em>Straight</em> is a plain arpeggio; <em>Up</em> played as <em>Acid</em> is
+  a 303 line. Same notes, same order, completely different music.
+</p>
+
+<h3>Controls</h3>
+
+<dl class="params">
+  <dt>On</dt><dd>Switches it in. Everything below only matters when this is on.</dd>
+  <dt>Link</dt><dd>How the rate relates to the sequencer's — a clock divider, so the two land on the same grid. See section 13.</dd>
+  <dt>Rate</dt><dd>The step length. A musical division when synced; free-running steps per second when not.</dd>
+  <dt>Swing</dt><dd>Delays every second step. 0 is straight, up to a hard shuffle at 75%.</dd>
+  <dt>Octaves</dt><dd>1 to 3. The pattern repeats up through this many octaves before returning.</dd>
+  <dt>Gate</dt><dd>How much of each step the note actually sounds for. Short is staccato, long is legato.</dd>
+  <dt>BPM</dt><dd>The tempo, when WaveLathe owns it. In a plugin this follows the host and reads <code>ext</code>.</dd>
+</dl>
+
+<h3>Reading a rhythm pattern</h3>
+
+<p>
+  Each pattern is written as one character per step. The mode supplies the
+  notes; these characters decide what happens to each one.
+</p>
+
+<div class="legend">
+  <div><span class="glyph">x</span><span>play the next note</span></div>
+  <div><span class="glyph">X</span><span>play it accented</span></div>
+  <div><span class="glyph">o</span><span>play it softly</span></div>
+  <div><span class="glyph">.</span><span>rest</span></div>
+  <div><span class="glyph">-</span><span>tie the note through this step</span></div>
+  <div><span class="glyph">^</span><span>next note, an octave up</span></div>
+  <div><span class="glyph">v</span><span>next note, an octave down</span></div>
+  <div><span class="glyph">=</span><span>play the previous note again (a ratchet)</span></div>
+  <div><span class="glyph">*</span><span>play the whole chord</span></div>
+  <div><span class="glyph">?</span><span>play any held note at random</span></div>
+</div>
+
+<h3>The 24 note orders</h3>
+
+<table class="compact">
+  <thead><tr><th style="width:9rem">Mode</th><th>Order</th></tr></thead>
+  <tbody>
+    <tr class="group"><td colspan="2">Direction</td></tr>
+    <tr><td class="pname">Up</td><td>Lowest note to highest, then repeat.</td></tr>
+    <tr><td class="pname">Down</td><td>Highest note to lowest, then repeat.</td></tr>
+    <tr><td class="pname">Up-Down</td><td>Up then back down, turning without repeating the end notes.</td></tr>
+    <tr><td class="pname">Down-Up</td><td>Down then back up, turning without repeating the end notes.</td></tr>
+    <tr><td class="pname">Up &amp; Down</td><td>Up then down, playing the top and bottom notes twice at the turn.</td></tr>
+    <tr><td class="pname">Down &amp; Up</td><td>Down then up, playing the top and bottom notes twice at the turn.</td></tr>
+    <tr class="group"><td colspan="2">Repeats and runs</td></tr>
+    <tr><td class="pname">Up x2</td><td>Up, with every note played twice.</td></tr>
+    <tr><td class="pname">Down x2</td><td>Down, with every note played twice.</td></tr>
+    <tr><td class="pname">Up-Down x2</td><td>Up and down, with every note played twice.</td></tr>
+    <tr><td class="pname">Cascade</td><td>Rolling three-note runs, each starting one note higher.</td></tr>
+    <tr class="group"><td colspan="2">Shapes</td></tr>
+    <tr><td class="pname">Converge</td><td>Outside in — lowest, highest, then working toward the middle.</td></tr>
+    <tr><td class="pname">Diverge</td><td>Inside out — middle notes first, working toward the extremes.</td></tr>
+    <tr><td class="pname">Con-Diverge</td><td>Outside in, then back inside out.</td></tr>
+    <tr class="group"><td colspan="2">Pedal notes</td></tr>
+    <tr><td class="pname">Pinky Up</td><td>The top note on every other step, the rest climbing between.</td></tr>
+    <tr><td class="pname">Pinky Up-Down</td><td>The top note on every other step, the rest going up then down.</td></tr>
+    <tr><td class="pname">Thumb Up</td><td>The bottom note on every other step, the rest climbing between.</td></tr>
+    <tr><td class="pname">Thumb Up-Down</td><td>The bottom note on every other step, the rest going up then down.</td></tr>
+    <tr class="group"><td colspan="2">Order of arrival</td></tr>
+    <tr><td class="pname">Play Order</td><td>In the order you pressed the keys.</td></tr>
+    <tr><td class="pname">Reverse Order</td><td>In the reverse of the order you pressed the keys.</td></tr>
+    <tr><td class="pname">Chord</td><td>All held notes together, retriggered on the step clock.</td></tr>
+    <tr class="group"><td colspan="2">Random</td></tr>
+    <tr><td class="pname">Random Once</td><td>One random order, kept until you change the chord.</td></tr>
+    <tr><td class="pname">Random</td><td>A different note at random on every step.</td></tr>
+    <tr><td class="pname">Random Other</td><td>Random, but every note plays before any repeats.</td></tr>
+    <tr><td class="pname">Random Walk</td><td>Drifts one note at a time, up or down.</td></tr>
+  </tbody>
+</table>
+
+<h3>The 25 rhythm patterns</h3>
+
+<table class="compact">
+  <thead><tr><th style="width:7.5rem">Pattern</th><th style="width:10rem">Steps</th><th>Character</th></tr></thead>
+  <tbody>
+    <tr class="group"><td colspan="3">Even</td></tr>
+    <tr><td class="pname">Straight</td><td class="steps">xxxxxxxxxxxxxxxx</td><td>Every step, evenly — the plain arpeggio.</td></tr>
+    <tr><td class="pname">Off Beat</td><td class="steps">.x.x.x.x</td><td>Only the off beats, the house and reggae skank.</td></tr>
+    <tr><td class="pname">Half Time</td><td class="steps">x...x...</td><td>One note every other beat, for space under a lead.</td></tr>
+    <tr class="group"><td colspan="3">Syncopated</td></tr>
+    <tr><td class="pname">Dotted 8th</td><td class="steps">x..x..x..x..x..x</td><td>Every third step — the dotted delay pattern of trance.</td></tr>
+    <tr><td class="pname">Tresillo</td><td class="steps">x..x..x.</td><td>The 3-3-2 pulse under most modern pop and latin music.</td></tr>
+    <tr><td class="pname">Son Clave</td><td class="steps">x..x..x...x.x...</td><td>The 3-2 son clave, the spine of afro-cuban rhythm.</td></tr>
+    <tr><td class="pname">Skip</td><td class="steps">xx.xxx.x</td><td>Two on, one off — a loping, tripping feel.</td></tr>
+    <tr><td class="pname">Pump</td><td class="steps">X..x..X..x..X.x.</td><td>Accent on the beat with a pickup, the french house push.</td></tr>
+    <tr class="group"><td colspan="3">Driving</td></tr>
+    <tr><td class="pname">Gallop</td><td class="steps">x.xxx.xxx.xxx.xx</td><td>Long-short-short, the galloping riff rhythm.</td></tr>
+    <tr><td class="pname">Trance Gate</td><td class="steps">x.xx.x.xx.xx.x.x</td><td>Chopped sixteenths, the gated trance stab.</td></tr>
+    <tr><td class="pname">Stab</td><td class="steps">Xxx.Xxx.Xxx.Xxx.</td><td>Accented downbeat with three tight notes behind it.</td></tr>
+    <tr><td class="pname">Rolling</td><td class="steps">xxx.xxx.xxx.xx..</td><td>Three-note rolls with a breath between them.</td></tr>
+    <tr><td class="pname">Burst</td><td class="steps">x..xxx..x..xxx..</td><td>Rests broken by short bursts of notes.</td></tr>
+    <tr class="group"><td colspan="3">Repeats</td></tr>
+    <tr><td class="pname">Double Up</td><td class="steps">x=x=x=x=</td><td>Every note struck twice, the classic ratchet pair.</td></tr>
+    <tr><td class="pname">Ratchet</td><td class="steps">x...x...x...x===</td><td>Sparse, then a fast roll on the last beat.</td></tr>
+    <tr><td class="pname">Long Short</td><td class="steps">x-x.x-x.</td><td>A tied long note answered by a short one.</td></tr>
+    <tr class="group"><td colspan="3">Octave</td></tr>
+    <tr><td class="pname">Octave Jump</td><td class="steps">x^x^x^x^</td><td>Alternates with the note an octave up — the Juno arp.</td></tr>
+    <tr><td class="pname">Octave Bounce</td><td class="steps">x^xvx^xv</td><td>Bounces an octave above then below.</td></tr>
+    <tr><td class="pname">Rise</td><td class="steps">xx^^xx^^</td><td>Two low, two high, climbing in pairs.</td></tr>
+    <tr><td class="pname">Fall</td><td class="steps">xxvvxxvv</td><td>Two in place, two an octave down.</td></tr>
+    <tr><td class="pname">Berlin</td><td class="steps">x^x.x^x.xvx.x^x.</td><td>Wandering octaves over a steady pulse, berlin school.</td></tr>
+    <tr class="group"><td colspan="3">Character</td></tr>
+    <tr><td class="pname">Acid</td><td class="steps">X-x.x.X-x..xX-.x</td><td>Accents and slides, the 303 bassline feel.</td></tr>
+    <tr><td class="pname">Chord Punch</td><td class="steps">*.x.*.x.*.x.*.x.</td><td>The whole chord on the beat, single notes between.</td></tr>
+    <tr><td class="pname">Chord Stab</td><td class="steps">*..*..*.</td><td>Block chords on a 3-3-2 pulse.</td></tr>
+    <tr><td class="pname">Sprinkle</td><td class="steps">x?x.x?x.</td><td>A steady pulse with a random note thrown in.</td></tr>
+  </tbody>
+</table>
+</section>
+
+<!-- ====================================================================== -->
+<!-- 9. SEQUENCER                                                            -->
+<!-- ====================================================================== -->
+
+<section>
+<h2 id="sequencer">9 · The step sequencer</h2>
+
+<p>
+  A piano roll of up to 64 steps that writes its own notes, a drum grid that
+  plays the kit on the same clock, and automation lanes for both. Open it with
+  the <strong>Sequencer</strong> tab. <strong>Notes</strong> and
+  <strong>Drums</strong>, above the right-hand end of the grid, switch between
+  the two grids; both play all the time, whichever one is showing.
+</p>
+
+<figure>
+  <img src="images/sequencer-tab.png" alt="The WaveLathe Sequencer page showing a generated line: the transport row, the piano-roll note grid with rows named by the scale, velocity and chance bars beneath it, and a Cutoff automation lane drawn as two swells at the bottom.">
+  <figcaption>
+    <b>The Sequencer page</b>, note grid. Transport across the top, the note
+    grid in the middle with a row per note of the current scale, the per-step
+    lanes beneath it, and a Cutoff lane drawn under the synth automation. The
+    warm <b>Show all (1 hidden)</b> is the drum lane this view is not showing.
+  </figcaption>
+</figure>
+
+<h3>Transport</h3>
+
+<dl class="params">
+  <dt>Play / Stop</dt><dd>Runs the pattern. It always starts from the top, so a take recorded now lines up with one recorded later.</dd>
+  <dt>REC</dt><dd>Arms recording. With <strong>Rec notes</strong> ticked it captures what you play as well as any dial you move; with it unticked it captures dial moves only.</dd>
+  <dt>Quantise</dt><dd>Snaps captured notes to the grid.</dd>
+  <dt>Generate</dt><dd>Writes a new line using a Euclidean rhythm and a melodic shape, leaving locked steps untouched. Notes only — it is greyed out while the drum grid is showing.</dd>
+  <dt>Clear Steps</dt><dd>Empties the note grid. Under the drum grid it reads <strong>Clear Drums</strong> and empties that instead. Undo brings either back.</dd>
+  <dt>Length</dt><dd>How many steps before the pattern repeats, up to 64.</dd>
+  <dt>Rate</dt><dd>The step length, as a musical division.</dd>
+  <dt>Root</dt><dd>The note the pattern's scale degrees are counted from.</dd>
+  <dt>Density</dt><dd>For Generate: how many of the steps sound.</dd>
+  <dt>Range</dt><dd>For Generate: how far the line is allowed to wander, in scale degrees.</dd>
+</dl>
+
+<h3>Notes are degrees, not pitches</h3>
+
+<p>
+  Each step holds a <strong>scale degree</strong> rather than a note number. So
+  changing the key transposes the whole pattern and keeps it in tune, and a
+  wrong note is not representable at all. This is why the grid's rows are
+  labelled by the current scale rather than by every chromatic note.
+</p>
+
+<p>
+  Notes can be as short as a sixteenth of a step and as long as 64 steps, and
+  can start anywhere inside their step — so a line can be pushed or dragged off
+  the grid deliberately.
+</p>
+
+<h3>The per-step lanes</h3>
+
+<table class="compact">
+  <thead><tr><th style="width:7rem">Lane</th><th>What it sets</th></tr></thead>
+  <tbody>
+    <tr><td class="pname">VELOCITY</td><td>How hard that step plays.</td></tr>
+    <tr><td class="pname">CHANCE</td><td>The probability the step sounds at all. Below 100% the pattern varies each time round.</td></tr>
+    <tr><td class="pname">OCTAVE</td><td>Shifts that step by −1 to +2 octaves.</td></tr>
+    <tr><td class="pname">ACCENT</td><td>Plays the step at the Accent level from the Expression block instead of its own velocity. One dial then retunes every accent at once.</td></tr>
+    <tr><td class="pname">SLIDE</td><td>Ties the step into the next one: the note is held and the pitch slides across instead of the envelope retriggering. Needs <strong>Mono</strong> and <strong>Legato</strong> on to do anything.</td></tr>
+    <tr><td class="pname">LOCK</td><td>Protects the step from <strong>Generate</strong>. Lock the ones you like and press Generate again for the rest.</td></tr>
+  </tbody>
+</table>
+
+<h3>The drum grid</h3>
+
+<figure>
+  <img src="images/drum-grid.png" alt="The drum grid: twelve rows named Kick to Aux, with a four-on-the-floor kick whose downbeats are accented in amber, claps on two and four with one pushed late, closed and open hats, rims and a crash, and a CHat Pan automation lane drawn as a wave underneath.">
+  <figcaption>
+    <b>The drum grid</b>, two bars of a house beat. The amber kicks are
+    accented. The clap at the far right of the second bar has been pushed
+    late — its block sits off its cell. Rows with nothing on them are dimmed.
+    Underneath, a pan lane swings the closed hat from side to side.
+  </figcaption>
+</figure>
+
+<p>
+  One row per slot of the kit, and each step split in two, so hits can land on
+  thirty-seconds. The rows are the twelve slots on the Drums page, named for
+  whatever drum each slot holds (section 10).
+</p>
+
+<table class="compact">
+  <thead><tr><th style="width:11rem">Do this</th><th>To</th></tr></thead>
+  <tbody>
+    <tr><td>Click a cell</td><td>Place a hit, or remove one.</td></tr>
+    <tr><td>Drag along a row</td><td>Draw a run. The first cell decides: start on an empty one and the drag draws, start on a hit and it erases.</td></tr>
+    <tr><td>Right-click a hit</td><td>Accent it, or take the accent off. Accented hits are amber.</td></tr>
+    <tr><td><kbd>Shift</kbd>-drag a hit</td><td>Push it off the beat, early or late, without moving it to another cell.</td></tr>
+    <tr><td>Click a row's name</td><td>Hear that drum on its own.</td></tr>
+    <tr><td>Mouse wheel</td><td>Scroll through time. With <kbd>Ctrl</kbd> held, zoom. The note grid works the same way.</td></tr>
+  </tbody>
+</table>
+
+<h3>Automation lanes</h3>
+
+<p>
+  Any of the 171 parameters — the synth's 63 and every dial on the kit's
+  twelve strips — can have a lane drawn or recorded against the pattern's
+  timeline. Two ways in:
+</p>
+
+<ul>
+  <li>Press <strong>REC</strong>, play the pattern, and move a dial. The move is captured onto the lane.</li>
+  <li>Press <strong>+ Add Lane</strong> and draw the shape by hand. A new lane starts flat at the parameter's current value.</li>
+</ul>
+
+<p>
+  <strong>The strip shows the lanes for the grid that is up</strong> — synth
+  lanes under the note grid, drum lanes under the drum grid — and its title
+  says which: <em>Synth Automation</em> or <em>Drum Automation</em>. Nothing is
+  hidden silently. <strong>Show all</strong> counts what it is hiding, in the
+  warm colour — <em>Show all (3 hidden)</em> — and an empty strip over a
+  project that has lanes of the other kind says how many there are. Press it
+  to see every lane at once, under plain <em>Automation</em>.
+</p>
+
+<ul>
+  <li><strong>+ Add Lane</strong> offers the dials of the grid that is up: seven synth groups under the notes, or the nine drum controls — Level through Amt 2, each for any of the twelve slots — under the drums. With Show all on, it offers everything.</li>
+  <li><strong>Clear</strong> removes the lanes you can see, and only those. It reads <strong>Clear All</strong> when every lane is in view. Either is one undo step.</li>
+</ul>
+
+<p>
+  Playback does not fight you: while your hand is on a dial, or a learned MIDI
+  controller is moving it, that lane stops driving it. Only lanes actually in
+  use are saved with a project.
+</p>
+</section>
+
+<!-- ====================================================================== -->
+<!-- 10. DRUM MACHINE                                                        -->
+<!-- ====================================================================== -->
+
+<section>
+<h2 id="drums">10 · The drum machine</h2>
+
+<p>
+  Twelve slots, laid out as a mixer on the <strong>Drums</strong> page and as
+  twelve rows in the sequencer's drum grid. Slots 1–11 hold the eleven drums of
+  a classic analogue machine — kick, snare, rim, clap, three toms, cowbell,
+  closed and open hats, crash — and slot 12, <strong>Aux</strong>, starts
+  empty. The drums are synthesised, from oscillators and noise, so the kit
+  needs no samples to sound. You can put any of sixteen drums, or a sample of
+  your own, on any slot.
+</p>
+
+<figure>
+  <img src="images/drums-page.png" alt="The Drums page while a beat plays: twelve mixer strips from Kick to Aux, each with its trigger note under the name, lamps lit beside Level on the kick, the three toms, the open hat and the crash, the kick sent to Dist and the clap to Reverb 1, and the effects rack of Reverb 1, Distortion, EQ and Delay down the right.">
+  <figcaption>
+    <b>The Drums page</b> while a beat plays, caught as the tom run lands on
+    the crash. Each strip prints the note that plays it under its name, and
+    its lamp lights with every hit. The kick runs through <b>Dist</b> and the
+    clap through <b>Reverb 1</b>; the rack down the right sets what those units
+    sound like. Slots the pattern does not use are dimmed. The display at the
+    top shows the kick, the last drum touched.
+  </figcaption>
+</figure>
+
+<h3>A strip</h3>
+
+<dl class="params">
+  <dt>Name</dt>
+  <dd>Click it to hear the drum on its own, and to put it on the displays at the top of the window. Right-click it for the slot menu, below. Under it is the note that plays the slot, as a name and a number — <code>C1 (36)</code>. The number is there because DAWs disagree about names: the note WaveLathe calls C1, some hosts call C2, and they all agree it is 36.</dd>
+  <dt>Lamp</dt>
+  <dd>The dot beside Level. White while the drum sounds, and red if it went past full scale — measured after both effects, so a sensible level driven into the distortion still shows. Red stays up for a second, long enough to notice.</dd>
+  <dt>Level</dt>
+  <dd>0–100%. Every slot starts at 80%.</dd>
+  <dt>Attack</dt>
+  <dd>Softens the start of the hit. <strong>Off</strong> is an instant strike, which is how every slot starts. The dial reaches a quarter of however long the drum rings, and the readout is in real milliseconds — so turning Decay down shortens what Attack can reach, and the number follows.</dd>
+  <dt>Decay</dt>
+  <dd>How long the drum rings, as a multiple of its natural length: ×0.33 to ×3.0, and ×1.0 is the drum as designed.</dd>
+  <dt>Tune</dt>
+  <dd>±12 semitones.</dd>
+  <dt>Pan</dt>
+  <dd>Left 100 to right 100, centre marked <code>C</code>.</dd>
+  <dt>FX 1 · Amt 1 · FX 2 · Amt 2</dt>
+  <dd>Two effect slots, run as a chain: the drum goes through FX 1's unit and then through FX 2's. Each picks <strong>Off</strong>, <strong>Reverb 1</strong>, <strong>Dist</strong>, <strong>EQ</strong> or <strong>Delay</strong>, and its Amt sets how much, from <strong>Dry</strong> up.</dd>
+</dl>
+
+<h3>What a slot plays</h3>
+
+<figure class="narrow">
+  <img src="images/drum-strip-menu.png" alt="The slot menu for the Kick strip: Load sample, Clear sample, Synth drum opened to a list of None (silent) and sixteen drums with Kick ticked, Learn trigger note, and Reset to GM (C1).">
+  <figcaption>
+    <b>Right-click a strip's name</b> for the slot menu. <b>Synth drum</b>
+    lists all sixteen.
+  </figcaption>
+</figure>
+
+<dl class="params">
+  <dt>Synth drum</dt>
+  <dd>Any of sixteen: Kick, Snare, Rim, Clap, LoTom, MidTom, HiTom, Cowbell, CHat, OHat, Crash, Ride, Clave, Maraca, Perc 1 and Perc 2 — or <strong>None (silent)</strong>. The slot takes the drum's name, in the mixer and in the grid.</dd>
+  <dt>Load sample…</dt>
+  <dd>Plays a file of your own on the slot — WAV, AIFF or FLAC. The browser plays each file as you move through the folder, through that slot's own dials and effects, in time with the pattern if it is running. <strong>Load</strong> keeps what you are hearing; <kbd>Esc</kbd> or any other way out puts back what the slot had. Level, Attack, Decay, Tune and Pan all work on a sample.</dd>
+  <dt>Clear sample</dt>
+  <dd>Takes the sample off, and the slot plays its drum again.</dd>
+  <dt>Learn trigger note… · Reset to GM</dt>
+  <dd>Which MIDI note plays the slot. See section 14.</dd>
+</dl>
+
+<p>
+  <strong>Samples are saved inside the project</strong>, so a project opened
+  on another computer brings its sounds with it. That is also why a project
+  with samples on it is megabytes rather than kilobytes.
+</p>
+
+<div class="note">
+  <p>
+    <span class="tag">Note</span>
+    A closed hat cuts an open one off, the way a real hi-hat does. The rule
+    follows the drum rather than the slot: wherever you put the two hats, the
+    closed one chokes the open one.
+  </p>
+</div>
+
+<h3>The effects rack</h3>
+
+<p>
+  The four units the FX slots point at. Their settings are shared by the whole
+  kit, but each drum runs through its own copy — so two drums sent to Reverb 1
+  are in two identical rooms rather than one, and a drum can go through one
+  unit and then another.
+</p>
+
+<table class="compact">
+  <thead><tr><th style="width:7rem">Unit</th><th style="width:11rem">Controls</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td class="pname">Reverb 1</td><td>Size · Damp · Level</td><td>A room. Damp darkens the tail.</td></tr>
+    <tr><td class="pname">Distortion</td><td>Drive · Tone · Level</td><td>Picked as <strong>Dist</strong> on a strip.</td></tr>
+    <tr><td class="pname">EQ</td><td>Low · High · Level</td><td>A low shelf at 200 Hz, which moves a kick without taking the snare with it, and a high shelf at 4 kHz, where the hats are.</td></tr>
+    <tr><td class="pname">Delay</td><td>Time · Fbk · Level</td><td>Time is a note division, locked to the tempo, up to a quarter note.</td></tr>
+  </tbody>
+</table>
+
+<h3>Playing the kit</h3>
+
+<ul>
+  <li>Draw a pattern in the sequencer's drum grid (section 9).</li>
+  <li>Click a strip's name, or a row's name in the drum grid.</li>
+  <li>While the Drums page is up, <kbd>Q</kbd> to <kbd>]</kbd> on the computer keyboard strike the twelve slots, left to right. Hold <kbd>Shift</kbd> for an accent (section 17).</li>
+  <li>Play pads on a MIDI drum channel (section 14).</li>
+</ul>
+
+<p>
+  While the Drums page is up, the Waveform and Envelope at the top of the
+  window show the drum you last touched, named in the corner — move the
+  crash's Decay and the envelope becomes the crash's. They show the drum dry,
+  without its effects, because the dials underneath are all about the drum.
+</p>
+
+<p>
+  The kit — which drum or sample is on each slot, every dial on the strips, the
+  rack and the drum pattern — is saved with the <strong>project</strong>, not
+  with a synth preset (section 16).
+</p>
+</section>
+
+<!-- ====================================================================== -->
+<!-- 11. MASTER PAGE                                                         -->
+<!-- ====================================================================== -->
+
+<section>
+<h2 id="master">11 · The Master page</h2>
+
+<p>
+  Everything WaveLathe makes — the synth and the drums together — passes
+  through this page on its way out. Two stages, in the order the page reads,
+  top to bottom:
+</p>
+
+<figure>
+<svg viewBox="0 0 760 150" role="img" aria-label="Signal flow: the synth voices pass through the synth's own effects, the drum kit through its own effect slots; the two meet at the bus effects on the Master page, then pass through the mastering chain to the output." xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="ar3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/>
+    </marker>
+  </defs>
+  <g font-family="Bahnschrift, Segoe UI Semibold, sans-serif" font-size="11.5" fill="currentColor">
+    <g stroke="currentColor" stroke-width="1.3" fill="none">
+      <rect x="14" y="18" width="150" height="40" rx="3"/>
+      <rect x="14" y="92" width="150" height="40" rx="3"/>
+    </g>
+    <text x="30" y="36">Synth voices</text>
+    <text x="30" y="50" font-size="9.5" opacity="0.75">and the synth's effects</text>
+    <text x="30" y="110">Drum kit</text>
+    <text x="30" y="124" font-size="9.5" opacity="0.75">and its FX 1 / FX 2</text>
+
+    <g fill="none" stroke="currentColor" stroke-width="1.2">
+      <path d="M164 38 L214 38 L214 75"/>
+      <path d="M164 112 L214 112 L214 75"/>
+      <path d="M214 75 L262 75" marker-end="url(#ar3)"/>
+    </g>
+
+    <g stroke="#a95f0d" stroke-width="1.8" fill="none"><rect x="264" y="55" width="190" height="40" rx="3"/></g>
+    <text x="280" y="73" fill="#a95f0d">1–7 · Bus effects</text>
+    <text x="280" y="87" font-size="9.5" opacity="0.8">the whole mix, one room</text>
+
+    <path d="M454 75 L500 75" fill="none" stroke="currentColor" stroke-width="1.2" marker-end="url(#ar3)"/>
+
+    <g stroke="#2aa8a4" stroke-width="1.8" fill="none"><rect x="502" y="55" width="170" height="40" rx="3"/></g>
+    <text x="518" y="73" fill="#2aa8a4">8–11 · Mastering</text>
+    <text x="518" y="87" font-size="9.5" opacity="0.8">off until switched on</text>
+
+    <path d="M672 75 L712 75" fill="none" stroke="currentColor" stroke-width="1.2" marker-end="url(#ar3)"/>
+    <text x="716" y="79">Out</text>
+  </g>
+</svg>
+<figcaption>
+  <b>Where the Master page sits.</b> The synth's effects belong to the synth,
+  and each drum's effect slots to that drum. The bus effects are the first
+  place the two meet.
+</figcaption>
+</figure>
+
+<figure>
+  <img src="images/master-page.png" alt="The Master page while a beat plays: seven bus effects across the top, Mastering on ticked, saturation, compressor, trim and limiter below with the compressor taking three and a half decibels and the limiter a little, the MASTER display showing the squared-off wave over its grey ghost, and the output peaking just under full scale with CLIP unlit.">
+  <figcaption>
+    <b>The Master page</b> with mastering switched on. The compressor is
+    taking 3.5 dB (<b>COMP GR</b>) and the limiter a fraction of one
+    (<b>LIMIT GR</b>), and the output peaks just under full scale. The
+    <b>MASTER</b> display draws a note through this page over a grey copy of
+    it going in.
+  </figcaption>
+</figure>
+
+<h3>Bus effects <span class="badge">1</span>–<span class="badge">7</span></h3>
+
+<p>
+  The Synth page's seven effects a second time, over the whole mix:
+  <strong>Distortion</strong>, <strong>Chorus</strong>, <strong>Phaser</strong>,
+  <strong>Delay</strong>, <strong>Reverb</strong>, <strong>EQ</strong> and
+  <strong>Output</strong>, with the same controls as section 7. A reverb here
+  puts the bassline and the kit in one room, which neither of their own effects
+  can do.
+</p>
+
+<p>
+  One difference: <strong>Output Gain</strong> here is in decibels, ±24, with a
+  real zero — it is the level going into the mastering chain, and 0.0dB means
+  unchanged. Everything starts dry, flat and at unity, and a bus left that way
+  passes the mix through exactly, bit for bit.
+</p>
+
+<h3>Mastering chain <span class="badge">8</span>–<span class="badge">11</span></h3>
+
+<p>
+  Tick <strong>Mastering on</strong> to switch it in. It is off by default, so
+  a sound or a project made before it existed plays exactly as it did.
+</p>
+
+<table class="compact">
+  <thead><tr><th style="width:3rem">&nbsp;</th><th style="width:7.5rem">Stage</th><th>Controls and notes</th></tr></thead>
+  <tbody>
+    <tr><td><span class="badge">8</span></td><td><strong>Saturation</strong></td><td><span class="pname">Drive · Sat Mix</span> — analogue-style warmth. It runs at four times the sample rate, so pushing it hard does not fold harsh aliasing back into the mix.</td></tr>
+    <tr><td><span class="badge">9</span></td><td><strong>Compressor</strong></td><td><span class="pname">Thresh · Ratio · Attack · Release · Makeup · Mix</span> — evens out the level. Thresh −48 to 0 dB, Ratio up to 20:1, Attack 0.1–100 ms, Release 10–1000 ms, Makeup up to +24 dB. Mix below 100% blends the uncompressed signal back in (parallel compression).</td></tr>
+    <tr><td><span class="badge">10</span></td><td><strong>Trim</strong></td><td><span class="pname">Trim</span> — ±24 dB into the limiter. It snaps to exactly 0.0dB at the centre.</td></tr>
+    <tr><td><span class="badge">11</span></td><td><strong>Limiter</strong></td><td><span class="pname">Ceiling · Release</span> — the output never goes past Ceiling (−12 to 0 dB). It looks ahead by a millisecond and a half to turn peaks down smoothly instead of clipping them.</td></tr>
+  </tbody>
+</table>
+
+<p>
+  <strong>COMP GR</strong> and <strong>LIMIT GR</strong>, on the right, show how
+  many decibels each is taking off, up to 20.
+</p>
+
+<div class="note">
+  <p>
+    <span class="tag">Tip</span>
+    With the synth and the drums both at their starting levels, the mix can
+    reach full scale and light <strong>CLIP</strong>. Switching mastering on is
+    the quick answer: the limiter holds the output under its ceiling. Turning
+    the kit's levels down is the other one.
+  </p>
+</div>
+
+<h3>The displays follow the page</h3>
+
+<p>
+  On the Master page, <strong>WAVEFORM</strong> becomes <strong>MASTER</strong>:
+  the patch's note played through this page's bus effects and mastering chain,
+  drawn over a grey copy of the note going in. The <strong>ENVELOPE</strong>
+  does the same and runs on past the note far enough to show a bus delay's
+  repeats and a reverb's tail. Before and after share one scale, so a gain
+  change or a limiter pulling the peaks down shows rather than being scaled
+  away. <strong>SPECTRUM</strong> draws the bus EQ, labelled BUS EQ.
+</p>
+
+<h3>Good to know</h3>
+
+<ul>
+  <li><strong>Saved with the project</strong>, both halves of the page. Loading a synth preset leaves them alone (section 16).</li>
+  <li><strong>Not automatable, not learnable.</strong> Neither the bus effects nor the mastering chain are offered to a DAW, or to MIDI Learn — your DAW has mastering tools of its own for that. WaveLathe Master, below, is the automatable version of the chain.</li>
+  <li><strong>Latency.</strong> The chain costs about 1.6 ms (72 samples at 44.1 kHz). A plugin reports it to the host whether mastering is on or off, and plays exactly that late in both, so switching mastering never moves your track in time.</li>
+</ul>
+
+<h3>WaveLathe Master</h3>
+
+<p>
+  The same mastering chain as a separate effect, for a mix bus in your DAW —
+  where it can master anything routed into it, not only WaveLathe. Its four
+  stages are numbered 1–4, and its twelve controls are automatable from the
+  host. Unlike the page inside the synth, it starts switched on: putting it on
+  a bus is already saying what you want. It installs like the synth (section
+  1), and also runs as a standalone application.
+</p>
+</section>
+
+<!-- ====================================================================== -->
+<!-- 12. PLAY IN KEY                                                         -->
+<!-- ====================================================================== -->
+
+<section>
+<h2 id="play-in-key">12 · Play in Key</h2>
+
+<p>
+  Under <strong>Options → Play in Key</strong>. Every note you play is pulled
+  into the chosen scale, and optionally turned into a chord built on it. With
+  Scale set to <strong>Chromatic (off)</strong> and Chord set to
+  <strong>Off</strong>, playing is untouched.
+</p>
+
+<p>
+  Chords are built from the scale rather than from a fixed shape, so the
+  quality follows the key: the chord on the second degree of a major key comes
+  out minor by itself, with nothing to get wrong.
+</p>
+
+<h3>Scales</h3>
+
+<table class="compact">
+  <thead><tr><th style="width:10rem">Scale</th><th>Character</th></tr></thead>
+  <tbody>
+    <tr><td class="pname">Chromatic (off)</td><td>Every note — the lock is off.</td></tr>
+    <tr><td class="pname">Major</td><td>Bright and resolved. The default happy sound.</td></tr>
+    <tr><td class="pname">Natural Minor</td><td>The standard sad sound, and most of dance music.</td></tr>
+    <tr><td class="pname">Harmonic Minor</td><td>Minor with a raised seventh — tense, eastern.</td></tr>
+    <tr><td class="pname">Melodic Minor</td><td>Minor going up, smoother than harmonic.</td></tr>
+    <tr><td class="pname">Dorian</td><td>Minor with a brighter sixth. Funk and house.</td></tr>
+    <tr><td class="pname">Phrygian</td><td>Minor with a flat second — spanish, dark.</td></tr>
+    <tr><td class="pname">Lydian</td><td>Major with a raised fourth — floating, filmic.</td></tr>
+    <tr><td class="pname">Mixolydian</td><td>Major with a flat seventh — bluesy, rock.</td></tr>
+    <tr><td class="pname">Locrian</td><td>Unstable and unresolved. Use sparingly.</td></tr>
+    <tr><td class="pname">Major Pentatonic</td><td>Five notes, all safe together. Hard to go wrong.</td></tr>
+    <tr><td class="pname">Minor Pentatonic</td><td>Five notes — the riff scale. Start here.</td></tr>
+    <tr><td class="pname">Blues</td><td>Minor pentatonic plus the flat fifth.</td></tr>
+    <tr><td class="pname">Whole Tone</td><td>Every step the same size — dreamlike, no home note.</td></tr>
+    <tr><td class="pname">Diminished</td><td>Alternating steps — tense, used over dominant chords.</td></tr>
+    <tr><td class="pname">Hungarian Minor</td><td>Two augmented steps — exotic and dramatic.</td></tr>
+  </tbody>
+</table>
+
+<h3>Chord modes</h3>
+
+<p>
+  <span class="pname">Off</span> ·
+  <span class="pname">Power (5th)</span> ·
+  <span class="pname">Triad</span> ·
+  <span class="pname">7th</span> ·
+  <span class="pname">Sus4</span> ·
+  <span class="pname">Octave</span> ·
+  <span class="pname">Triad + Octave</span>
+</p>
+
+<p>
+  Power is root and fifth with no third, which is safe in any key. Chord modes
+  need a scale chosen first — the menu item stays greyed until one is.
+</p>
+
+<div class="note">
+  <p>
+    <span class="tag">Note</span>
+    <strong>Play in Key belongs to the sound.</strong> Key, scale and chord are
+    saved in a synth preset, and loading one brings them with it — several
+    factory presets are built around theirs. The sequencer's notes are scale
+    degrees (section 9), so a synth preset in another key moves your pattern
+    into that key too. <kbd>Ctrl</kbd>+<kbd>Z</kbd> takes the load back.
+  </p>
+</div>
+</section>
+
+<!-- ====================================================================== -->
+<!-- 13. TEMPO                                                               -->
+<!-- ====================================================================== -->
+
+<section>
+<h2 id="tempo">13 · Tempo and sync</h2>
+
+<p>
+  Everything with a rhythm follows the tempo: the arpeggiator; the step
+  sequencer, drum grid included; the three delays — the Synth page's and the
+  Master page's when their Sync is on, and the drum rack's always; and either
+  LFO when its Sync is on. They all read the same musical timeline, so two
+  features set to the same division are describing the same instants rather
+  than two rates that happen to be close.
+</p>
+
+<h3>Where the tempo comes from</h3>
+
+<figure>
+<svg viewBox="0 0 700 190" role="img" aria-label="Tempo priority: in a plugin the host's tempo always wins; in the standalone incoming MIDI clock wins when present, otherwise the BPM dial is used." xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/>
+    </marker>
+  </defs>
+  <g font-family="Bahnschrift, Segoe UI Semibold, sans-serif" font-size="12" fill="currentColor">
+    <g stroke="#a95f0d" stroke-width="1.8" fill="none"><rect x="14" y="20" width="150" height="40" rx="3"/></g>
+    <text x="30" y="38" fill="#a95f0d" font-size="11">1 · Host tempo</text>
+    <text x="30" y="53" font-size="9.5" fill="currentColor" opacity="0.8">plugin only</text>
+
+    <g stroke="#2aa8a4" stroke-width="1.8" fill="none"><rect x="14" y="76" width="150" height="40" rx="3"/></g>
+    <text x="30" y="94" fill="#2aa8a4" font-size="11">2 · MIDI clock</text>
+    <text x="30" y="109" font-size="9.5" fill="currentColor" opacity="0.8">standalone, when arriving</text>
+
+    <g stroke="currentColor" stroke-width="1.4" fill="none"><rect x="14" y="132" width="150" height="40" rx="3"/></g>
+    <text x="30" y="150" font-size="11">3 · BPM dial</text>
+    <text x="30" y="165" font-size="9.5" opacity="0.8">the fallback</text>
+
+    <g fill="none" stroke="currentColor" stroke-width="1.2" marker-end="url(#ar2)">
+      <path d="M164 40 L250 40 L250 92 L300 92"/>
+      <path d="M164 96 L250 96" marker-end=""/>
+      <path d="M164 152 L250 152 L250 100" marker-end=""/>
+    </g>
+
+    <g stroke="#2aa8a4" stroke-width="1.8" fill="none"><rect x="300" y="72" width="120" height="40" rx="3"/></g>
+    <text x="316" y="97" fill="#2aa8a4">Musical clock</text>
+
+    <g fill="none" stroke="currentColor" stroke-width="1.2" marker-end="url(#ar2)">
+      <path d="M420 92 L470 92 L470 32 L520 32"/>
+      <path d="M470 92 L520 92"/>
+      <path d="M470 92 L470 152 L520 152"/>
+      <path d="M470 62 L520 62"/>
+      <path d="M470 122 L520 122"/>
+    </g>
+    <g font-size="11">
+      <text x="528" y="36">Arpeggiator</text>
+      <text x="528" y="66">Sequencer + drums</text>
+      <text x="528" y="96">Delays</text>
+      <text x="528" y="126">LFO 1 (sync)</text>
+      <text x="528" y="156">LFO 2 (sync)</text>
+    </g>
+  </g>
+</svg>
+<figcaption>
+  <b>Which tempo wins.</b> The first source present is the one used. A plugin
+  always follows its host. The standalone prefers MIDI clock when it is
+  arriving and falls back to the dial when it stops — so a pulled cable does
+  not freeze the arpeggiator.
+</figcaption>
+</figure>
+
+<p>
+  When the tempo is coming from outside, the BPM readout shows the external
+  value marked <code>ext</code>. The dial's pointer follows approximately — a
+  dial carries 128 positions across 20 to 300 BPM, which is a step of nearly
+  two — while the number underneath it is exact.
+</p>
+
+<h3>Divisions</h3>
+
+<p>
+  Every synced rate is stated as one of these, slowest first. A dot means
+  dotted (half as long again); a T means a triplet.
+</p>
+
+<p class="steps" style="font-size:9.6pt; white-space:normal; line-height:2">
+  1/1 · 1/2. · 1/2 · 1/2T · 1/4. · 1/4 · 1/4T · 1/8. · 1/8 · 1/8T ·
+  1/16. · 1/16 · 1/16T · 1/32
+</p>
+
+<h3>Linking the arpeggiator to the sequencer</h3>
+
+<p>
+  The arpeggiator's <strong>Link</strong> control relates its rate to the
+  sequencer's as a whole multiple — a clock divider, the way hardware
+  sequencers and modular clocks solve this. Whole multiples are what keep the
+  two on the same grid: an arpeggiator at twice the sequencer's rate still
+  lands on every sequencer step, so what it plays can be recorded onto the
+  sequencer's own timeline without landing between steps.
+</p>
+
+<p class="steps" style="font-size:9.6pt">
+  Seq / 4 · Seq / 2 · Seq x 1 · Seq x 2 · Seq x 4 · Own rate
+</p>
+
+<p>
+  <strong>Own rate</strong> ignores the sequencer and uses the arpeggiator's
+  own Rate dial instead.
+</p>
+</section>
+
+<!-- ====================================================================== -->
+<!-- 14. MIDI                                                                -->
+<!-- ====================================================================== -->
+
+<section>
+<h2 id="midi">14 · MIDI</h2>
+
+<h3>MIDI Learn</h3>
+
+<p>
+  <strong>Options → MIDI Learn</strong> binds a dial to a controller. Switch
+  it on, click the dial you want, then move the knob or fader on your
+  controller. <kbd>Esc</kbd> or the Done button leaves learn mode.
+  Right-click a learned dial to clear it. Every dial on the Synth page and all
+  nine on each drum strip can be learned; the Master page's cannot
+  (section 11).
+</p>
+
+<p>
+  <strong>Options → MIDI Assignments</strong> shows everything learned in one
+  place, with a count beside the menu item, and lets you edit or remove
+  assignments there.
+</p>
+
+<h3>MIDI Monitor</h3>
+
+<p>
+  <strong>Options → MIDI Monitor</strong> shows every message arriving. This is
+  the quickest way to find out what your controller actually sends — which
+  controller number a knob is on, whether a pad sends aftertouch, whether
+  anything is arriving at all.
+</p>
+
+<h3>Keyboard channel</h3>
+
+<p>
+  <strong>Options → Keyboard Channel</strong> narrows note input to a single
+  MIDI channel, or <strong>Omni</strong> for all of them. This filters
+  <em>notes only</em> — controllers still pass on every channel whatever this
+  is set to, so narrowing the keyboard does not disconnect a knob that sends on
+  another channel.
+</p>
+
+<h3>Drum channel</h3>
+
+<p>
+  <strong>Options → Drum Channel</strong> gives the kit a MIDI channel of its
+  own. It is <strong>Off</strong> until you choose one; channel 10 is where
+  most pad controllers and drum tracks send. Notes on the drum channel play the
+  kit and never reach the synth — even if the keyboard channel is set to the
+  same one — so a drum track cannot put a bass note under every kick.
+  Controllers still pass on every channel.
+</p>
+
+<p>
+  Pads are read by the <strong>General MIDI</strong> drum map, which is what a
+  pad controller or a DAW's drum track sends unless told otherwise: kick on
+  C1 (36), snare on D1 (38), closed hat on F#1 (42), and so on. Each strip
+  prints its note under its name. General MIDI has more drums than the kit
+  has slots, so its floor and low toms all play LoTom, its mid toms MidTom,
+  its crashes Crash, and its rides Aux. Notes that are not drums in General
+  MIDI are ignored.
+</p>
+
+<h3>Moving the trigger notes</h3>
+
+<dl class="params">
+  <dt>By the octave</dt>
+  <dd><strong>Options → Drum Notes</strong> shifts the whole map up or down by an octave at a time, up to three either way, and names where the kick lands — <em>kick on C2</em>. It stays greyed until a drum channel is set.</dd>
+  <dt>By the pad</dt>
+  <dd>Right-click a strip's name, choose <strong>Learn trigger note…</strong>, and hit the pad you want on the drum channel. That note now plays the slot, wherever the octave shift is, and General MIDI's note no longer does. A note reaches one drum only: teaching a note that another slot has takes it off that slot. The learning hit does not play, so you are not deafened while you set it. <strong>Reset to GM</strong> puts the slot back, and says which note it will go back to.</dd>
+</dl>
+
+<p>
+  The drum channel, the octave shift and learned pads are kept with the
+  application rather than a project, because they describe your hardware —
+  opening someone else's project does not move your pads.
+</p>
+
+<h3>Host automation</h3>
+
+<div class="plugin">
+  <p>
+    <span class="tag">Plugin</span>
+    <strong>171 parameters</strong> are published to the host, so a DAW can
+    automate them by name: the synth's 63, and the drum kit's 108 — nine for
+    each of the twelve slots, named like <em>Snare Level</em>. Stepped
+    controls — filter type, sub octave, unison voices, arpeggiator octaves,
+    the drum strips' FX selectors — are declared as stepped, so automation
+    lanes snap to real positions instead of sliding between them, and the FX
+    selectors show their names, <em>Reverb 1</em>, rather than a number.
+  </p>
+</div>
+
+<h3>MIDI clock</h3>
+
+<div class="standalone">
+  <p>
+    <span class="tag">Standalone</span>
+    <strong>Options → Follow MIDI Clock</strong> slaves the tempo to incoming
+    clock. WaveLathe fits a line through two seconds of clock pulses rather
+    than timing one gap, which is what keeps the reading steady — a raw pulse
+    interval carries enough scheduling noise to move the reading by several
+    BPM. A real tempo change is still followed within about a fifth of a
+    second, and the occasional lost pulse is ignored.
+  </p>
+</div>
+</section>
+
+<!-- ====================================================================== -->
+<!-- 15. MATCHING                                                            -->
+<!-- ====================================================================== -->
+
+<section>
+<h2 id="matching">15 · Sound matching</h2>
+
+<p>
+  Load a WAV file and WaveLathe will try to build a patch that sounds like it.
+  Both live under <strong>Options → Match a Sound</strong>.
+</p>
+
+<dl class="params">
+  <dt>Quick Match…</dt>
+  <dd>Plays the whole factory bank against your sample and picks the closest starting point. Fast, and often enough on its own.</dd>
+  <dt>Deep Match…</dt>
+  <dd>Then fits the parameters — oscillators, filter, envelopes and effects — across several notes of the sample at once. Slower. Choose <strong>Stop Deep Match</strong> to end it early; what it has found so far is kept.</dd>
+  <dt>Export A/B…</dt>
+  <dd>Writes your sample and WaveLathe's attempt at it side by side, so you can listen to the two and judge the fit.</dd>
+</dl>
+
+<p>
+  A match changes the Synth page's sound and nothing else, the same as loading
+  a synth preset: your pattern, your kit and the Master page stay as they were.
+</p>
+
+<div class="warn">
+  <p>
+    <span class="tag">Limits</span>
+    Matching works on <strong>the audio you supply</strong>. WaveLathe reads
+    its own preset format and standard <code>.fxp</code> files that it wrote
+    itself. It cannot decode presets made by other synthesisers — if you load
+    one, it will say so. That is by design, not a fault.
+  </p>
+</div>
+
+<div class="note">
+  <p>
+    <span class="tag">Tip</span>
+    Deep Match is heavy work and runs from the interface. In a plugin it can
+    make the host feel unresponsive while it runs. A short, clean, single-note
+    sample matches better and faster than a long busy one.
+  </p>
+</div>
+
+<h3>Sampling your own wavetable</h3>
+
+<p>
+  <strong>Options → Wavetable → Sample Wavetable from Audio…</strong> builds
+  the oscillators' wavetable out of a file you choose, so the Wave dial sweeps
+  through your own material. <strong>Use Built-in Waves</strong> puts the
+  standard set back.
+</p>
+</section>
+
+<!-- ====================================================================== -->
+<!-- 16. SYNTH PRESETS AND PROJECTS                                          -->
+<!-- ====================================================================== -->
+
+<section>
+<h2 id="presets">16 · Synth presets and projects</h2>
+
+<figure>
+  <img src="images/options-menu.png" alt="The Options menu open over the Synth page, showing Undo and Redo, then Project with Save Project and Load Project, Synth Presets with Browse, Save, Load and Init Synth Patch, Play in Key, Wavetable, Match a Sound, and Settings including Keyboard Channel, Drum Channel and Drum Notes, with the version number at the bottom.">
+  <figcaption>
+    <b>The Options menu</b> is where everything that is not a dial lives.
+    <b>Project</b> saves and loads everything; <b>Synth Presets</b> saves and
+    loads the sound. The version number at the bottom is the quickest way to
+    confirm which build you are running.
+  </figcaption>
+</figure>
+
+<p>
+  Two kinds of file, and the menu says which is which. A <strong>synth
+  preset</strong> is a sound. A <strong>project</strong> is everything.
+</p>
+
+<table>
+  <thead><tr><th style="width:12rem">Options menu</th><th>Saves and loads</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Save Project… · Load Project…</strong></td><td>Everything on every page: the sound, the tempo, the pattern and its automation, the whole kit with its samples, and both halves of the Master page.</td></tr>
+    <tr><td><strong>Save Synth Preset… · Load Synth Preset…</strong></td><td>The Synth page's sound: oscillators, filter, envelopes, modulation, the synth's own effects, the expression routings, the arpeggiator, Play in Key, and a sampled wavetable if the sound uses one. Nothing else, either way round.</td></tr>
+    <tr><td><strong>Browse Synth Presets…</strong></td><td>Plays synth presets as you move through them, the factory bank and your own. <strong>Load</strong> keeps what you are hearing; <strong>Cancel</strong>, <kbd>Esc</kbd> or closing the window puts your sound back.</td></tr>
+    <tr><td><strong>Init Synth Patch</strong></td><td>Resets the sound. The rest of the project is untouched.</td></tr>
+  </tbody>
+</table>
+
+<p>
+  So loading a lead sound never changes your tempo, your beat or your
+  mastering, and a synth preset is small enough to share — about a kilobyte,
+  where a project with drum samples in it is megabytes. If you want the pattern
+  and the kit to come with it, save a project.
+</p>
+
+<h3>What holds what</h3>
+
+<table class="compact">
+  <thead><tr><th style="width:8rem">File</th><th style="width:5rem">Extension</th><th>Holds</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Synth preset</strong></td><td class="pname">.fxp</td><td>The sound alone, as listed above.</td></tr>
+    <tr><td><strong>Project</strong></td><td class="pname">.wlp</td><td>Everything: the sound, the tempo, the note and drum patterns and their automation, the kit with its samples, the Master page, the MIDI assignments and the keyboard channel.</td></tr>
+    <tr><td><strong>Settings</strong></td><td class="pname">.settings</td><td>Your audio device, folders, the drum channel, the drum notes and learned pads. Written automatically.</td></tr>
+  </tbody>
+</table>
+
+<p>
+  Settings live in <code>%APPDATA%\WaveLathe\WaveLathe.settings</code>.
+  Synth presets and projects go wherever you save them. Loading a project that
+  carries MIDI assignments asks before applying them, because they describe
+  the desk it was made at, which may not be yours.
+</p>
+
+<div class="note">
+  <p>
+    <span class="tag">Note</span>
+    A preset file saved by a version before 0.48.0 may hold a whole project.
+    Load Synth Preset takes only its sound; the rest stays in the file.
+    Projects from every version open as projects.
+  </p>
+</div>
+
+<h3>Remembered folders</h3>
+
+<p>
+  <strong>Options → Settings → Folders</strong> sets a starting folder for each
+  kind of file chooser independently — synth presets, projects, Quick Match
+  audio, Deep Match audio, wavetable audio, drum samples, and A/B exports. Each
+  remembers where you last were. <strong>Reset All to Defaults</strong> puts
+  them back.
+</p>
+
+<h3>The factory bank</h3>
+
+<p>
+  65 synth presets, levelled to a consistent headroom so moving between them
+  does not jump in volume. They appear in WaveLathe's own browser and, in a
+  plugin, in the host's program menu as well.
+</p>
+
+<table class="compact">
+  <thead><tr><th style="width:6rem">Category</th><th class="num-col" style="width:2.5rem">No.</th><th>Presets</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Bass</strong></td><td class="num-col">12</td><td>Deep Sub · Reese Wobble · Acid Squelch · Hard Growl · Pluck Bass · Rubber Bass · Distorted 808 · Talking Bass · Portamento Sub · FM Bite · Funk Slap · Rubber Donk</td></tr>
+    <tr><td><strong>Lead</strong></td><td class="num-col">12</td><td>Supersaw Lead · Square Solo · Screamer · Sine Whistle · Trance Lead · Chip Lead · Vocal Lead · Wide Stack · Hoover · Mono Slide · FM Bell Lead · Sync Sweep</td></tr>
+    <tr><td><strong>Pad</strong></td><td class="num-col">9</td><td>Warm Analog Pad · Glass Pad · Choir Pad · Dark Drone · Shimmer Pad · String Ensemble · Juno Chorus · Brass Swell · Motion Pad</td></tr>
+    <tr><td><strong>Keys</strong></td><td class="num-col">8</td><td>Electric Piano · Drawbar Organ · Clav · Soft Keys · FM Tines · Harpsichord · Toy Piano · Reed Organ</td></tr>
+    <tr><td><strong>Pluck</strong></td><td class="num-col">8</td><td>Nylon Pluck · Bell Pluck · Marimba · Hard Pluck · Koto · Glass Bell · Kalimba · Harp Gliss</td></tr>
+    <tr><td><strong>Sequence</strong></td><td class="num-col">9</td><td>Trance Gate Seq · Acid Line · Berlin Drift · Octave Runner · Chord Pulse · Tresillo Pop · 303 Slide · Dub Stab · Glide Runner</td></tr>
+    <tr><td><strong>Effect</strong></td><td class="num-col">7</td><td>Riser · Downlifter · Noise Sweep · Alien Chatter · Impact · Reverse Swell · Tape Warble</td></tr>
+  </tbody>
+</table>
+
+<h3>Autosave</h3>
+
+<p>
+  If WaveLathe closes unexpectedly, <strong>Options → Recover Autosave…</strong>
+  appears the next time it starts, offering the work it had at the time. The
+  item is only there when there is something to recover.
+</p>
+</section>
+
+<!-- ====================================================================== -->
+<!-- 17. COMPUTER KEYBOARD                                                   -->
+<!-- ====================================================================== -->
+
+<section>
+<h2 id="keyboard">17 · The computer keyboard</h2>
+
+<p>
+  Two rows of your keyboard play an octave and a half, laid out like a piano —
+  the home row is the white keys and the row above it the black ones.
+</p>
+
+<figure>
+<svg viewBox="0 0 612 160" role="img" aria-label="Computer keyboard note layout: A S D F G H J K L semicolon and apostrophe play the white keys from C up to F, while W E T Y U O P play the black keys between them." xmlns="http://www.w3.org/2000/svg">
+  <g stroke="currentColor" stroke-width="1.1" fill="none">
+    <rect x="20" y="20" width="52" height="110" rx="2"/>
+    <rect x="72" y="20" width="52" height="110" rx="2"/>
+    <rect x="124" y="20" width="52" height="110" rx="2"/>
+    <rect x="176" y="20" width="52" height="110" rx="2"/>
+    <rect x="228" y="20" width="52" height="110" rx="2"/>
+    <rect x="280" y="20" width="52" height="110" rx="2"/>
+    <rect x="332" y="20" width="52" height="110" rx="2"/>
+    <rect x="384" y="20" width="52" height="110" rx="2"/>
+    <rect x="436" y="20" width="52" height="110" rx="2"/>
+    <rect x="488" y="20" width="52" height="110" rx="2"/>
+    <rect x="540" y="20" width="52" height="110" rx="2"/>
+  </g>
+  <g fill="currentColor">
+    <rect x="56" y="20" width="32" height="66" rx="2"/>
+    <rect x="108" y="20" width="32" height="66" rx="2"/>
+    <rect x="212" y="20" width="32" height="66" rx="2"/>
+    <rect x="264" y="20" width="32" height="66" rx="2"/>
+    <rect x="316" y="20" width="32" height="66" rx="2"/>
+    <rect x="420" y="20" width="32" height="66" rx="2"/>
+    <rect x="472" y="20" width="32" height="66" rx="2"/>
+  </g>
+  <g font-family="Consolas, monospace" font-size="14" font-weight="700" fill="currentColor" text-anchor="middle">
+    <text x="46" y="120">A</text><text x="98" y="120">S</text><text x="150" y="120">D</text>
+    <text x="202" y="120">F</text><text x="254" y="120">G</text><text x="306" y="120">H</text>
+    <text x="358" y="120">J</text><text x="410" y="120">K</text><text x="462" y="120">L</text>
+    <text x="514" y="120">;</text><text x="566" y="120">'</text>
+  </g>
+  <g font-family="Consolas, monospace" font-size="13" font-weight="700" fill="var(--paper)" text-anchor="middle">
+    <text x="72" y="60">W</text><text x="124" y="60">E</text><text x="228" y="60">T</text>
+    <text x="280" y="60">Y</text><text x="332" y="60">U</text><text x="436" y="60">O</text>
+    <text x="488" y="60">P</text>
+  </g>
+  <g font-family="Bahnschrift, Segoe UI Semibold, sans-serif" font-size="10" fill="currentColor" opacity="0.65" text-anchor="middle">
+    <text x="46" y="148">C</text><text x="410" y="148">C (+1 oct)</text>
+  </g>
+</svg>
+<figcaption>
+  <b>The note keys.</b> <kbd>A</kbd> is C and <kbd>K</kbd> is the C an octave
+  above. Use <strong>Oct −</strong> and <strong>Oct +</strong> on screen to move
+  the whole range; anything you are holding jumps with it.
+</figcaption>
+</figure>
+
+<p>
+  The note keys stop playing when they should: while a menu, dialog or file
+  chooser is open, while another application is in front, and whenever
+  <kbd>Ctrl</kbd> or <kbd>Alt</kbd> is held — so <kbd>Ctrl</kbd>+<kbd>Y</kbd>
+  redoes something instead of sounding a note.
+</p>
+
+<h3>Drum keys</h3>
+
+<p>
+  While the <strong>Drums</strong> page is up, the top letter row plays the kit
+  instead: <kbd>Q</kbd> <kbd>W</kbd> <kbd>E</kbd> <kbd>R</kbd> <kbd>T</kbd>
+  <kbd>Y</kbd> <kbd>U</kbd> <kbd>I</kbd> <kbd>O</kbd> <kbd>P</kbd>
+  <kbd>[</kbd> <kbd>]</kbd> strike the twelve slots, left to right, the same
+  order as the strips above them. Hold <kbd>Shift</kbd> for an accent. A key
+  strikes once when it goes down; holding it does not repeat.
+</p>
+
+<h3>Other keys</h3>
+
+<table class="compact">
+  <thead><tr><th style="width:9rem">Key</th><th>Does</th></tr></thead>
+  <tbody>
+    <tr><td><kbd>Ctrl</kbd>+<kbd>Z</kbd></td><td>Undo, across the whole project.</td></tr>
+    <tr><td><kbd>Ctrl</kbd>+<kbd>Y</kbd></td><td>Redo.</td></tr>
+    <tr><td><kbd>F11</kbd></td><td>Full screen on and off.</td></tr>
+    <tr><td><kbd>Esc</kbd></td><td>Leaves full screen, or leaves MIDI Learn.</td></tr>
+  </tbody>
+</table>
+</section>
+
+<!-- ====================================================================== -->
+<!-- 18. REFERENCE                                                           -->
+<!-- ====================================================================== -->
+
+<section>
+<h2 id="reference">18 · Reference tables</h2>
+
+<h3>Ranges</h3>
+
+<table class="compact">
+  <thead><tr><th style="width:12rem">Control</th><th>Range</th></tr></thead>
+  <tbody>
+    <tr><td class="pname">Unison voices</td><td>1 to 7</td></tr>
+    <tr><td class="pname">Unison detune</td><td>0 to 50 cents</td></tr>
+    <tr><td class="pname">Osc 2 semitones</td><td>−24 to +24</td></tr>
+    <tr><td class="pname">Osc 2 fine</td><td>−100 to +100 cents</td></tr>
+    <tr><td class="pname">Sub octave</td><td>−1 or −2 octaves</td></tr>
+    <tr><td class="pname">Glide</td><td>0 (off) to 2000 ms</td></tr>
+    <tr><td class="pname">Delay time</td><td>10 to 1500 ms</td></tr>
+    <tr><td class="pname">Delay feedback</td><td>0 to 95%</td></tr>
+    <tr><td class="pname">Phaser feedback</td><td>0 to 90%</td></tr>
+    <tr><td class="pname">EQ bands</td><td>−12 to +12 dB</td></tr>
+    <tr><td class="pname">Tempo</td><td>20 to 300 BPM</td></tr>
+    <tr><td class="pname">Arpeggiator octaves</td><td>1 to 3</td></tr>
+    <tr><td class="pname">Arpeggiator swing</td><td>0 to 75%</td></tr>
+    <tr><td class="pname">Sequencer length</td><td>1 to 64 steps</td></tr>
+    <tr><td class="pname">Step octave</td><td>−1 to +2</td></tr>
+    <tr><td class="pname">Drum grid</td><td>12 rows, two cells per step</td></tr>
+    <tr><td class="pname">Drum Tune</td><td>−12 to +12 semitones</td></tr>
+    <tr><td class="pname">Drum Decay</td><td>×0.33 to ×3.0 of the drum's own length</td></tr>
+    <tr><td class="pname">Drum Attack</td><td>Off to a quarter of the drum's current length</td></tr>
+    <tr><td class="pname">Drum Notes shift</td><td>−3 to +3 octaves</td></tr>
+    <tr><td class="pname">Bus Output Gain</td><td>−24 to +24 dB</td></tr>
+    <tr><td class="pname">Compressor</td><td>Threshold −48 to 0 dB · Ratio up to 20:1 · Makeup 0 to +24 dB</td></tr>
+    <tr><td class="pname">Limiter ceiling</td><td>−12 to 0 dB</td></tr>
+    <tr><td class="pname">Mastering latency</td><td>72 samples at 44.1 kHz, about 1.6 ms</td></tr>
+    <tr><td class="pname">Host parameters</td><td>171 — 63 synth, 108 drum</td></tr>
+  </tbody>
+</table>
+
+<h3>The Options menu</h3>
+
+<table class="compact">
+  <thead><tr><th style="width:8rem">Section</th><th>Items</th></tr></thead>
+  <tbody>
+    <tr><td><strong>—</strong></td><td>Undo · Redo · Recover Autosave… <span style="opacity:.65">(only when there is something to recover)</span></td></tr>
+    <tr><td><strong>Project</strong></td><td>Save Project… · Load Project…</td></tr>
+    <tr><td><strong>Synth Presets</strong></td><td>Browse Synth Presets… · Save Synth Preset… · Load Synth Preset… · Init Synth Patch</td></tr>
+    <tr><td><strong>Play in Key</strong></td><td>Key · Scale · Chord</td></tr>
+    <tr><td><strong>Wavetable</strong></td><td>Sample Wavetable from Audio… · Use Built-in Waves</td></tr>
+    <tr><td><strong>Match a Sound</strong></td><td>Quick Match… · Deep Match… · Export A/B…</td></tr>
+    <tr><td><strong>Settings</strong></td><td>Audio / MIDI Settings… · Folders · Follow MIDI Clock · Keyboard Channel · Drum Channel · Drum Notes · MIDI Learn · MIDI Assignments… · MIDI Monitor · Full Screen</td></tr>
+  </tbody>
+</table>
+</section>
+
+<!-- ====================================================================== -->
+<!-- 19. LIMITATIONS                                                         -->
+<!-- ====================================================================== -->
+
+<section>
+<h2 id="limits">19 · Known limitations</h2>
+
+<p>These are known and documented rather than hidden. They are not faults you need to report.</p>
+
+<dl class="params">
+  <dt>Loading a project replaces your MIDI assignments</dt>
+  <dd>WaveLathe asks first, but the assignments are global rather than per-instance.</dd>
+
+  <dt>The MIDI map is shared across plugin instances</dt>
+  <dd>Two instances in one session share one set of learned assignments. The drum channel, the drum notes and learned pads are kept for the application too, not per instance.</dd>
+
+  <dt>The Master page cannot be automated or learned</dt>
+  <dd>By design: a DAW has mastering tools of its own, and seventeen bus controls and twelve mastering controls would bury the host's parameter list. To automate the mastering chain, put WaveLathe Master on a bus instead (section 11).</dd>
+
+  <dt>Drum automation and learned drum dials from before 0.44.0 land on different dials</dt>
+  <dd>Every drum dial became automatable in 0.44.0, and the kit's parameters were renumbered to make room. A lane or a MIDI assignment saved earlier on a drum dial now drives a different one — a lane drawn for Snare Level plays into Snare Pan. Delete it and draw or learn it again. Nothing on the Synth page moved.</dd>
+
+  <dt>The drum grid has no bar numbers</dt>
+  <dd>The note grid numbers its beats and the drum grid does not yet. They share one timeline, so switching to <strong>Notes</strong> shows where you are.</dd>
+
+  <dt>Some AIFF files from sample libraries will not load</dt>
+  <dd>A few libraries store their audio inside an AIFF in an encoded form of their own rather than as plain audio. WaveLathe says so when it refuses one; converting the sample to WAV in the software it came with is the way round. Quick Match and Sample Wavetable are stricter about AIFF files than the drum slots are.</dd>
+
+  <dt>Presets from other synthesisers cannot be read</dt>
+  <dd>WaveLathe reads its own <code>.fxp</code> files. Another synth's preset format is not decoded.</dd>
+
+  <dt>Not code-signed</dt>
+  <dd>Expect a SmartScreen warning on first run. See section 1.</dd>
+
+  <dt>Windows only</dt>
+  <dd>There is no macOS or Linux build.</dd>
+</dl>
+</section>
+
+<!-- ====================================================================== -->
+<!-- 20. TROUBLESHOOTING                                                     -->
+<!-- ====================================================================== -->
+
+<section>
+<h2 id="trouble">20 · Troubleshooting</h2>
+
+<dl class="params">
+  <dt>No sound at all (standalone)</dt>
+  <dd>Open <strong>Options → Audio / MIDI Settings</strong> and check an output device is selected. This is the single most common cause.</dd>
+
+  <dt>No sound at all (plugin)</dt>
+  <dd>Check the track is armed and receiving MIDI, and that Output Gain <span class="badge">13</span> is not at zero. Try <strong>Init Synth Patch</strong> to rule the sound out.</dd>
+
+  <dt>My pads do not play the drums</dt>
+  <dd>Set <strong>Options → Drum Channel</strong> to the channel your pads send on — often 10. It is Off until you do. <strong>MIDI Monitor</strong> shows which channel is arriving.</dd>
+
+  <dt>The drums answer an octave away from where my controller says</dt>
+  <dd>Hosts and controllers disagree about note names: the note WaveLathe calls C1, some call C2. Go by the number in brackets under each strip's name. <strong>Options → Drum Notes</strong> shifts the whole kit by octaves, and <strong>Learn trigger note…</strong> puts a single slot on any pad (section 14).</dd>
+
+  <dt>CLIP lights when the drums and the synth play together</dt>
+  <dd>Their levels add up. Switch <strong>Mastering on</strong> on the Master page and the limiter holds the output under its ceiling, or bring the kit's Level dials down.</dd>
+
+  <dt>A lane I drew has disappeared</dt>
+  <dd>The automation strip shows the lanes for the grid that is up. If <strong>Show all</strong> has a number on it, that is how many lanes the other grid has — press it.</dd>
+
+  <dt>Loading a sound moved my pattern</dt>
+  <dd>Play in Key comes with a synth preset, and the pattern's notes are scale degrees, so a sound in another key takes the pattern with it. <kbd>Ctrl</kbd>+<kbd>Z</kbd> undoes the load (section 12).</dd>
+
+  <dt>WaveLathe is not in my host's plugin list</dt>
+  <dd>Confirm the <code>.vst3</code> is in a folder the host scans, then rescan. Some hosts keep a blacklist of plugins that failed a previous scan — clear it and rescan if so.</dd>
+
+  <dt>The arpeggiator or sequencer runs at the wrong speed</dt>
+  <dd>In a plugin, tempo always comes from the host. Check the BPM readout: if it shows <code>ext</code>, it is following something external. In the standalone, check whether <strong>Follow MIDI Clock</strong> is on.</dd>
+
+  <dt>The tempo jumps around</dt>
+  <dd>If MIDI clock is arriving from hardware, a small steady offset is usually the sender rather than WaveLathe — grooveboxes make clock by dividing a timer, and the rate they can hit is not always the number on the front.</dd>
+
+  <dt>SLIDE does nothing in the sequencer</dt>
+  <dd>Slide needs <strong>Mono</strong> and <strong>Legato</strong> switched on in the Oscillator 1 section. Without them there is nothing for a note to slide from.</dd>
+
+  <dt>Generate keeps overwriting a part I like</dt>
+  <dd>Set <strong>LOCK</strong> on the steps you want kept. Generate leaves locked steps alone.</dd>
+
+  <dt>It crashed</dt>
+  <dd>The useful part is <code>%LOCALAPPDATA%\CrashDumps</code> — a file named <code>WaveLathe.exe.&lt;number&gt;.dmp</code> written around the time it happened. Zip it, since GitHub will not take a <code>.dmp</code> as it is, and attach the zip to a bug report on the repository's <em>Issues</em> page.</dd>
+</dl>
+</section>
+
+<!-- ====================================================================== -->
+<!-- COLOPHON                                                                -->
+<!-- ====================================================================== -->
+
+<footer class="colophon">
+  <p>
+    <strong>WaveLathe <span class="guide-version">0.49.0</span></strong> —
+    user guide. Bugs, questions and things that sound wrong:
+    <strong>github.com/mrdatacommando/WaveLathe/issues</strong>
+  </p>
+  <p>
+    Copyright © 2026 Mark Van de Velde. WaveLathe is free software: you can
+    redistribute it and modify it under the terms of the GNU Affero General
+    Public License, version 3 or (at your option) any later version. It comes
+    with no warranty. LICENSE has the full terms, and THIRD_PARTY_NOTICES.txt
+    the licences of the components WaveLathe is built with.
+  </p>
+  <p>
+    What you make with WaveLathe is yours. The licence covers the program, not
+    your sounds, presets, projects or recordings.
+  </p>
+  <p>
+    VST is a registered trademark of Steinberg Media Technologies GmbH.
+    WaveLathe is not affiliated with, nor endorsed by, Steinberg Media
+    Technologies GmbH or Raw Material Software Limited.
+  </p>
+</footer>
+
+</main>
+</body>
+</html>
