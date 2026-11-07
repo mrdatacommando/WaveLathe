@@ -137,6 +137,13 @@ REQUIREMENTS
   For the plugin: any VST3 host. Tested against Ableton Live 12 Lite.
 
 
+NEWER VERSIONS
+
+  The latest release is always here:
+
+      https://github.com/mrdatacommando/WaveLathe/releases/latest
+
+
 GETTING IN TOUCH
 
   Bugs, questions and things that sound wrong:

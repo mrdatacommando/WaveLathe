@@ -21,6 +21,8 @@ Clicking a drum's name still only plays it, and browsing samples doesn't record 
 - **The search box still gets its letters:** nothing plays while you're typing in it. Press an arrow key to move to the results, and the keys play notes again.
 - **Other windows still take the keys:** a menu or alert open over the browser silences them as before.
 
+**New versions are on the [Releases page](https://github.com/mrdatacommando/WaveLathe/releases).** Starting with this one, each version is published there instead of being stored in the repository. The README's download link always gets the latest, under one fixed name, `WaveLathe-win64.zip`. The 0.49.0 zip stays in the `Releases/` folder, with a note pointing to the page.
+
 ## 0.49.0
 
 **WaveLathe is open source.** It's licensed under the GNU Affero General Public License, version 3 or later. It's free, and it stays free: a version released under this licence can't be taken back, and anything built from one has to carry the same licence.

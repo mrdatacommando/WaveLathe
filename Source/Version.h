@@ -31,6 +31,11 @@ namespace wavelathe
 //          menu open. Synth notes even from the Drums page, whose keys are
 //          drums, because the only thing worth playing is the sound being
 //          chosen. An arrow pressed in the search box hands the keys back.
+//          New versions go on GitHub's Releases page rather than into the
+//          repository, where each zip added its full size to every clone for
+//          good. The Releases folder keeps 0.49.0 and a note saying so, and the
+//          README's download link stops changing from release to release,
+//          because the zip now has one fixed name.
 //   0.49.0 WaveLathe is open source, under the GNU Affero General Public
 //          License, version 3 or later. It is free and it stays free: a
 //          version released under it cannot be taken back, and anything made

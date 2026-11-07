@@ -11,9 +11,6 @@ name: Build and test
 on:
   push:
     branches: [main]
-    # A commit that only swaps the package in Releases\ changes nothing that
-    # builds.
-    paths-ignore: ['Releases/**']
   pull_request:
   workflow_dispatch:
 

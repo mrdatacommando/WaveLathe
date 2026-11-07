@@ -2,9 +2,8 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 # Assembles the Windows release package: both products' standalones and VST3
-# bundles, the user guide and the terms, zipped with checksums. The zip and its
-# checksums are then copied into Releases\, which is committed, and the
-# README's download link is pointed at them.
+# bundles, the user guide and the terms, zipped with checksums, ready to attach
+# to a new release on GitHub's Releases page.
 #
 # Run from the project root, AFTER a Release build:
 #
@@ -155,11 +154,19 @@ foreach ($f in $binaries) {
 $distRoot = Join-Path $root "dist"
 $pkgName  = "WaveLathe-$v-win64"
 $pkg      = Join-Path $distRoot $pkgName
-$zip      = Join-Path $distRoot "$pkgName.zip"
+
+# What gets attached to the GitHub release, under names that never change. The
+# README's download link names the file, so a version number in the name would
+# break that link at every release. The folder carries the version instead, so
+# each release's copy stays where it is.
+$upload = Join-Path $distRoot "WaveLathe-$v-release"
+$zip    = Join-Path $upload "WaveLathe-win64.zip"
+$sums   = Join-Path $upload "WaveLathe-win64.sha256.txt"
 
 if (Test-Path $pkg) { Remove-Item $pkg -Recurse -Force }
-if (Test-Path $zip) { Remove-Item $zip -Force }
+if (Test-Path $upload) { Remove-Item $upload -Recurse -Force }
 New-Item -ItemType Directory -Force -Path (Join-Path $pkg "VST3") | Out-Null
+New-Item -ItemType Directory -Force -Path $upload | Out-Null
 
 # Both standalones at the top level, both VST3 bundles in one VST3 folder, so
 # the person receiving this copies one folder to one place.
@@ -195,7 +202,6 @@ Get-ChildItem $pkg -Recurse | ForEach-Object { $_.LastWriteTime = Get-Date }
 
 Compress-Archive -Path "$pkg\*" -DestinationPath $zip -CompressionLevel Optimal
 
-$sums = Join-Path $distRoot "$pkgName.sha256.txt"
 # The zip first, then every binary inside it. Checksums for the parts as well
 # as the whole, because a recipient who has already unpacked can still check
 # what they have without needing the zip back.
@@ -212,53 +218,21 @@ foreach ($f in $hashTargets) {
 }
 Set-Content -Path $sums -Value $lines -Encoding ascii
 
-# ---- Publish into Releases\ -------------------------------------------------
-#
-# The repository carries the newest package itself, so somebody who only wants
-# a copy to run can take it from the README with one click and never meet git.
-# Only the newest is kept in the tree: an older zip is still in the history,
-# and a folder of every one would leave a newcomer choosing between them.
-#
-# The README's download link is rewritten here too, between its two marker
-# comments, because a link typed by hand is the thing that goes stale first.
-
-$pub = Join-Path $root "Releases"
-New-Item -ItemType Directory -Force -Path $pub | Out-Null
-Get-ChildItem $pub -Filter "WaveLathe-*-win64*" | Remove-Item -Force
-Copy-Item $zip $pub
-Copy-Item $sums $pub
-
-$readmePath = Join-Path $root "README.md"
-$readmeMd = [System.IO.File]::ReadAllText($readmePath, $utf8)
-$open  = "<!-- download:start -->"
-$close = "<!-- download:end -->"
-$i = $readmeMd.IndexOf($open)
-$j = $readmeMd.IndexOf($close)
-if ($i -lt 0 -or $j -lt $i) { throw "README.md has lost its download markers - put them back around the link" }
-
-$zipMb = [math]::Round((Get-Item $zip).Length / 1MB, 1)
-# The raw URL downloads the file straight away. A link to the file within the
-# repository opens a GitHub page with a button on it instead, which is one
-# more thing to understand for exactly the reader this link is for.
-$raw = "https://github.com/mrdatacommando/WaveLathe/raw/main/Releases"
-$link = @(
-    $open,
-    "**[Download WaveLathe $v for Windows]($raw/$pkgName.zip)** - one zip, $zipMb MB,",
-    "holding both standalones, both VST3 plugins and the user guide. The",
-    "[checksums](Releases/$pkgName.sha256.txt) are beside it.",
-    $close
-) -join "`n"
-$readmeMd = $readmeMd.Substring(0, $i) + $link + $readmeMd.Substring($j + $close.Length)
-[System.IO.File]::WriteAllText($readmePath, $readmeMd, $utf8)
-
 # ---- Report -----------------------------------------------------------------
 
 Write-Host ("-" * 46)
 $zipKb = [math]::Round((Get-Item $zip).Length / 1MB, 2)
-Write-Host "  package  dist\$pkgName.zip  ($zipKb MB)" -ForegroundColor Green
-Write-Host "  sums     dist\$pkgName.sha256.txt"
-Write-Host "  copied   to Releases\, and the README's download link points at it"
+Write-Host "  package  dist\WaveLathe-$v-release\WaveLathe-win64.zip  ($zipKb MB)" -ForegroundColor Green
+Write-Host "  sums     dist\WaveLathe-$v-release\WaveLathe-win64.sha256.txt"
 Write-Host ""
 Get-ChildItem $pkg | ForEach-Object {
     if ($_.PSIsContainer) { Write-Host "    $($_.Name)\" } else { Write-Host "    $($_.Name)" }
 }
+Write-Host ""
+
+# Pre-release is the one box that can break something: the README's download
+# link asks for the latest release, and GitHub never counts a pre-release as
+# the latest, so ticking it would leave people with the version before.
+Write-Host "To publish: commit, tag v$v, push both by name, then on GitHub choose Draft a"
+Write-Host "new release for that tag and attach the two files above. Leave pre-release"
+Write-Host "unticked, or the README's download link will not find it."

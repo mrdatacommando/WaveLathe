@@ -7,10 +7,10 @@
 #     powershell -ExecutionPolicy Bypass -File Tools\make-milestone.ps1
 #     powershell -ExecutionPolicy Bypass -File Tools\make-milestone.ps1 -Note "beta out to friends"
 #
-# There is no version control on this project, so a milestone is the only way
-# back to a known state. That means the archive has to carry the SOURCE, not
-# just the build: the four WaveForge_bk*.exe files in "My Bks" preserve what
-# those builds sounded like and nothing about how to change them.
+# A milestone is a known state kept on this machine, outside git. That means the
+# archive has to carry the SOURCE, not just the build: the four WaveForge_bk*.exe
+# files in "My Bks" preserve what those builds sounded like and nothing about
+# how to change them.
 #
 # What goes in is everything that is written by hand, plus the release package
 # actually sent out. What stays out is anything a build regenerates - build/ is
@@ -143,8 +143,8 @@ $noteBlock
 WHAT THIS IS
 
   A complete snapshot of the hand-written project at version $v.
-  This project has no version control, so this archive is the only
-  route back to this state. It carries the SOURCE, not just a build.
+  Kept outside git, so it gets back to this state without the
+  repository. It carries the SOURCE, not just a build.
 
   Everything in build\ was deliberately left out. It regenerates
   from Source\ and CMakeLists.txt, and it is over half a gigabyte.
@@ -156,7 +156,7 @@ STATE AT THIS POINT
   Test suites       $suiteCount, all passing at the time of archiving
   Formats           Standalone (.exe) and VST3, Windows x64
   C++ runtime       Linked statically - no VC++ redistributable needed
-  Distribution      Beta, direct to friends. Not code-signed.
+  Distribution      Beta, on GitHub. Not code-signed.
 
 
 BUILD ENVIRONMENT

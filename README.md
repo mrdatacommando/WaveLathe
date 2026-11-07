@@ -6,6 +6,12 @@ A wavetable synthesiser, drum machine and mastering chain for Windows, as VST3
 plugins and standalone applications. Free and open source, under the
 [GNU AGPL v3](LICENSE).
 
+**[Download the latest version](https://github.com/mrdatacommando/WaveLathe/releases/latest/download/WaveLathe-win64.zip)** ·
+[All releases](https://github.com/mrdatacommando/WaveLathe/releases) ·
+[User guide (PDF)](Docs/WaveLathe-User-Guide.pdf) ·
+[What's changed](CHANGELOG.md) ·
+[Report a bug](https://github.com/mrdatacommando/WaveLathe/issues)
+
 ![WaveLathe's Synth page, playing the factory preset Acid Line](Docs/images/main-window.png)
 
 WaveLathe is two products built from one source tree:
@@ -21,17 +27,17 @@ no macOS or Linux build yet.
 
 ## Download
 
-<!-- download:start -->
-**[Download WaveLathe 0.49.0 for Windows](https://github.com/mrdatacommando/WaveLathe/raw/main/Releases/WaveLathe-0.49.0-win64.zip)** - one zip, 15.1 MB,
-holding both standalones, both VST3 plugins and the user guide. The
-[checksums](Releases/WaveLathe-0.49.0-win64.sha256.txt) are beside it.
-<!-- download:end -->
+**[Download the latest version for Windows](https://github.com/mrdatacommando/WaveLathe/releases/latest/download/WaveLathe-win64.zip)**
 
-You don't need a GitHub account or git. The link downloads a ready-built copy.
-The zip holds both standalones, both VST3 plugins, the user guide as a PDF, the
-licence and the third-party notices. Nothing else needs installing: the C++
-runtime is built into every file. The [changelog](CHANGELOG.md) lists what
-changed in each version.
+You don't need a GitHub account or git. The link downloads a ready-built copy
+as one zip, holding both standalones, both VST3 plugins, the user guide as a
+PDF, the licence and the third-party notices. Nothing else needs installing:
+the C++ runtime is built into every file.
+
+The [latest release](https://github.com/mrdatacommando/WaveLathe/releases/latest)
+says what's new and has the checksums. Earlier versions are on the
+[Releases page](https://github.com/mrdatacommando/WaveLathe/releases), and the
+[changelog](CHANGELOG.md) lists what changed in each.
 
 To install the standalone, put `WaveLathe.exe` anywhere and run it. Then open
 **Options → Audio / MIDI Settings** and choose your output device. Until you
@@ -63,8 +69,9 @@ swing, and up to three octaves. Play in Key keeps what you play in a key and
 scale, with a chord mode.
 
 **Sequencer page.** A piano roll for the synth and a step grid for the drums,
-with velocity, chance, ties, slides and accents. There are automation lanes, a
-pattern generator, and undo across the whole project.
+with velocity, chance, ties, slides and accents. Press REC and play, and synth
+notes and drum hits are written in as the pattern runs. There are automation
+lanes, a pattern generator, and undo across the whole project.
 
 **Drums page.** Twelve slots, each loaded with one of sixteen synthesised drums
 or a sample of your own. Every slot has level, attack, decay, tune and pan,
@@ -82,7 +89,8 @@ audio you supply. WaveLathe doesn't read other synthesisers' preset files.
 host. There's MIDI learn, a MIDI map, a MIDI monitor, and a separate MIDI
 channel for the drums.
 
-It ships with **65 factory presets**, levelled to a consistent loudness.
+It ships with **65 factory presets**, levelled to a consistent loudness. The
+computer keyboard keeps playing while you browse them, so you can hear each one.
 
 ## Building from source
 
@@ -128,7 +136,7 @@ a console application in `Tests\` that returns 0 when it passes.
 | Script | What it does |
 |---|---|
 | `Tools\make-guide.ps1` | Rebuilds the guide PDF from `Docs\WaveLathe-User-Guide.html` using Chrome or Edge. |
-| `Tools\make-release.ps1` | Packages a Release build into `dist\` as a zip with checksums. It refuses a stale or mis-versioned build. |
+| `Tools\make-release.ps1` | Packages a Release build into `dist\` as a zip with checksums, ready to attach to a GitHub release. It refuses a stale or mis-versioned build. |
 
 ### Layout
 
@@ -139,6 +147,7 @@ a console application in `Tests\` that returns 0 when it passes.
 | `Analysis\` | Command-line tools for analysing audio and presets during development. |
 | `Docs\` | The user guide and its screenshots, plus design notes. |
 | `Packaging\` | The read-me that goes into the release zip. |
+| `Releases\` | WaveLathe 0.49.0 only. Newer versions are on the [Releases page](https://github.com/mrdatacommando/WaveLathe/releases). |
 
 The version is set in two places: `Source\Version.h` and `project()` in
 `CMakeLists.txt`. The history of every release is in [CHANGELOG.md](CHANGELOG.md).
