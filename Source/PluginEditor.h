@@ -356,7 +356,16 @@ private:
 
     // Are the computer keys playing drums right now? Read in one place, so
     // switching page and switching what the keys do cannot disagree.
-    bool computerKeysPlayDrums() const { return currentPage == drumsPage; }
+    //
+    // Never while browsing synth presets, whichever page that started from: the
+    // only thing worth playing then is the sound being chosen.
+    bool computerKeysPlayDrums() const
+    {
+        return currentPage == drumsPage && presetBrowserWindow.getComponent() == nullptr;
+    }
+
+    // The preset browser while it is open, and null otherwise.
+    juce::Component::SafePointer<juce::DialogWindow> presetBrowserWindow;
 
     // The note each mapped key is currently sounding, or -1. Stored as the note
     // actually started, so releasing is correct even after an octave shift.
@@ -368,6 +377,12 @@ private:
     // keys are read from the global key state rather than delivered as events,
     // so nothing stops them reaching this editor on their own.
     bool keyboardIsElsewhere() const;
+
+    // The one exception, for the note keys alone: see PresetBrowser. Not folded
+    // into keyboardIsElsewhere, which also guards the undo shortcuts, and those
+    // must stay off behind the dialog.
+    bool presetBrowserLeavesNotesFree() const;
+
     void updateComputerKeyboardNotes(bool restartHeldKeys = false);
     void releaseComputerKeyboardNotes();
 

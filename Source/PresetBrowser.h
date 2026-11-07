@@ -34,7 +34,24 @@ public:
     void paint(juce::Graphics&) override;
     void resized() override;
 
-    static void show(ChooseFactory onFactory, ChooseFile onFile, Restore onRestore, Commit onCommit);
+    // The window it opened, which owns itself and goes when it is closed. Watch
+    // it with a SafePointer rather than holding on to the raw pointer.
+    static juce::DialogWindow* show(ChooseFactory onFactory, ChooseFile onFile, Restore onRestore,
+                                    Commit onCommit);
+
+    // Whether the computer keyboard's note keys keep playing with the browser
+    // up. Every other dialog silences them, but choosing a sound means playing
+    // it, and having to close the window to do that defeats the audition.
+    //
+    // Only while the browser is the topmost modal thing, so its category menu
+    // or an alert over it still takes the keys, and never while the search box
+    // has focus, because those letters are being typed.
+    //
+    // Takes what it looks at rather than asking JUCE, so it can be tested
+    // without opening a window.
+    static bool leavesNoteKeysFree(const juce::Component* browserWindow,
+                                   const juce::Component* topModal,
+                                   const juce::Component* focused);
 
 private:
     struct Row

@@ -7,7 +7,7 @@ cmake_minimum_required(VERSION 3.22)
 # Bumping this line is necessary but is not on its own enough: see the resource
 # rule under juce_add_plugin below, which is what actually carries the number
 # into the binary. For a month this line said 0.37.0 and the plugin said 0.1.0.
-project(WaveLathe VERSION 0.49.0)
+project(WaveLathe VERSION 0.49.1)
 
 # Release builds keep their symbols. Without a .pdb a crash dump can name the
 # module and an offset and nothing else - "WaveLathe.exe+0x15e61a" - and placing

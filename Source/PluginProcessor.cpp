@@ -571,8 +571,28 @@ void WaveLatheProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::Mi
         // hits have had that since they existed and a played one deserves it
         // more: at a 512-sample buffer, the top of the block is up to twelve
         // milliseconds early, which is audible on a hat.
-        drumKit.trigger(voice, hit.velocity, hit.velocity >= project::drumAccentVelocity,
-                        hit.sampleOffset);
+        const bool accent = hit.velocity >= project::drumAccentVelocity;
+
+        drumKit.trigger(voice, hit.velocity, accent, hit.sampleOffset);
+
+        // This note has just left the buffer the sequencer captures from, so
+        // an armed REC has to be told about it here or it never hears of it.
+        sequencer.notePlayedDrumHit(voice, hit.velocity, accent, hit.sampleOffset);
+    }
+
+    // The computer keys, the same two steps. At the top of the block, since a
+    // key has only been polled and has no sample of its own to land on.
+    const auto drumKeys = playedDrumKeys.exchange(0);
+
+    for (int voice = 0; voice < drums::numVoices; ++voice)
+    {
+        if ((drumKeys & (juce::uint32(1) << voice)) == 0)
+            continue;
+
+        const bool accent = (drumKeys & (juce::uint32(1) << (voice + auditionAccentShift))) != 0;
+
+        drumKit.trigger(voice, 1.0f, accent, 0);
+        sequencer.notePlayedDrumHit(voice, 1.0f, accent, 0);
     }
 
     keyboardState.processNextMidiBuffer(midiMessages, 0, buffer.getNumSamples(), true);
@@ -842,6 +862,19 @@ void WaveLatheProcessor::auditionDrumVoice(int voice, bool accent)
         bits |= juce::uint32(1) << (voice + auditionAccentShift);
 
     drumAuditions.fetch_or(bits);
+}
+
+void WaveLatheProcessor::playDrumVoice(int voice, bool accent)
+{
+    if (voice < 0 || voice >= drums::numVoices)
+        return;
+
+    auto bits = juce::uint32(1) << voice;
+
+    if (accent)
+        bits |= juce::uint32(1) << (voice + auditionAccentShift);
+
+    playedDrumKeys.fetch_or(bits);
 }
 
 void WaveLatheProcessor::updateDrumParameters(double bpm)

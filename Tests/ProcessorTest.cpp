@@ -812,6 +812,177 @@ int main()
         std::cout << "  a readout asked for no decimals gets none" << std::endl;
     }
 
+    // Playing the kit with REC armed, from the top of the block. SequencerTest
+    // proves a hit it is told about lands in the right cell. That the processor
+    // tells it is the part that was missing: a pad and a computer key each went
+    // straight to the kit, so both played perfectly and neither was recorded.
+    {
+        static constexpr int kickNote = 36;
+
+        auto makeArmed = []
+        {
+            auto processor = makeProcessor();
+            auto& params = processor->getParameters();
+            params.drumChannel.store(10.0f);
+            params.drumTranspose.store(0.0f);
+            params.seqPlaying.store(1.0f);
+            params.seqRecord.store(1.0f);
+            params.seqRecordNotes.store(1.0f);
+            params.seqQuantise.store(1.0f);
+            params.seqLength.store(16.0f);
+            return processor;
+        };
+
+        // The output of a few blocks, so a hit can be shown to have sounded.
+        auto loudestOver = [](WaveLatheProcessor& processor, juce::MidiBuffer first)
+        {
+            float loudest = 0.0f;
+
+            for (int i = 0; i < 16; ++i)
+            {
+                juce::AudioBuffer<float> buffer(2, testBlockSize);
+                buffer.clear();
+                juce::MidiBuffer midi;
+
+                if (i == 0)
+                    midi.swapWith(first);
+
+                processor.processBlock(buffer, midi);
+                loudest = juce::jmax(loudest, buffer.getMagnitude(0, 0, buffer.getNumSamples()));
+            }
+
+            return loudest;
+        };
+
+        auto padHit = [](int velocity, int sample)
+        {
+            juce::MidiBuffer midi;
+            midi.addEvent(juce::MidiMessage::noteOn(10, kickNote, (juce::uint8) velocity), sample);
+            return midi;
+        };
+
+        auto anyDrumWritten = [](WaveLatheProcessor& processor)
+        {
+            return processor.getSequencer().getNumUsedDrumVoices() > 0;
+        };
+
+        // A MIDI pad.
+        {
+            auto processor = makeArmed();
+            const int voice = processor->getDrumNoteMap().voiceForNote(kickNote, 0);
+            check(voice >= 0, "the kick's note strikes a slot");
+
+            const auto loudest = loudestOver(*processor, padHit(100, 100));
+            auto& sequencer = processor->getSequencer();
+
+            check(sequencer.getDrumCell(voice, 0).active, "a pad played with REC armed is written onto the drum grid");
+            check(!sequencer.getDrumCell(voice, 0).accent, "an ordinary hit is not written as an accent");
+            check(loudest > 0.01f, "and it is still heard as it is played");
+
+            bool anyStep = false;
+            for (int i = 0; i < StepSequencer::maxSteps; ++i)
+                anyStep = anyStep || sequencer.getStep(i).active;
+
+            check(!anyStep, "the note grid gets nothing from a pad");
+
+            auto accented = makeArmed();
+            loudestOver(*accented, padHit(127, 100));
+            check(accented->getSequencer().getDrumCell(voice, 0).accent, "a pad hit hard enough to accent is written as one");
+        }
+
+        // The same on a later beat, off the real clock.
+        {
+            auto processor = makeArmed();
+            auto& sequencer = processor->getSequencer();
+            const int voice = processor->getDrumNoteMap().voiceForNote(kickNote, 0);
+
+            for (int guard = 0; guard < 1000 && sequencer.getCurrentStep() < 4; ++guard)
+                runBlocks(*processor, 1);
+
+            loudestOver(*processor, padHit(100, 0));
+            check(sequencer.getDrumCell(voice, 8).active, "a pad on step 4 lands on step 4");
+        }
+
+        // A computer key.
+        {
+            auto processor = makeArmed();
+            auto& sequencer = processor->getSequencer();
+
+            processor->playDrumVoice(1, true);
+            const auto loudest = loudestOver(*processor, {});
+            const auto written = sequencer.getDrumCell(1, 0);
+
+            check(written.active, "a computer key played with REC armed is written onto the drum grid");
+            check(written.accent, "Shift on the key is written as an accent");
+            check(loudest > 0.01f, "and the key is still heard as it is played");
+        }
+
+        // Clicking a name is checking a sound, and the sample browser leans on
+        // the same call to play every file it passes over.
+        {
+            auto processor = makeArmed();
+            processor->auditionDrumVoice(2);
+            const auto loudest = loudestOver(*processor, {});
+
+            check(!anyDrumWritten(*processor), "an audition is never recorded, even with REC armed");
+            check(loudest > 0.01f, "though it does still sound");
+        }
+
+        // REC off is the ordinary case, and has to stay exactly what it was.
+        {
+            auto processor = makeArmed();
+            processor->getParameters().seqRecord.store(0.0f);
+            processor->playDrumVoice(1);
+            const auto loudest = loudestOver(*processor, padHit(100, 100));
+
+            check(!anyDrumWritten(*processor), "with REC off, playing writes nothing");
+            check(loudest > 0.01f, "and still plays");
+        }
+
+        // A pad being taught to a slot is setting something up, not playing.
+        {
+            auto processor = makeArmed();
+            processor->getDrumNoteMap().armLearn(3);
+            loudestOver(*processor, padHit(100, 100));
+
+            check(!anyDrumWritten(*processor), "a note taken by a learn is not recorded");
+        }
+
+        std::cout << "  a pad and a computer key both reach the drum grid" << std::endl;
+    }
+
+    // Playing the synth with the preset browser open. Every other dialog takes
+    // the note keys away, and the point of this one is to hear what it is
+    // choosing. The rule is checked with plain components, so no window opens.
+    {
+        juce::Component browserWindow;
+        juce::Component listInside;
+        juce::TextEditor searchInside;
+        browserWindow.addChildComponent(listInside);
+        browserWindow.addChildComponent(searchInside);
+
+        juce::Component menuOverIt;
+        juce::Component partOfTheEditor;
+
+        auto free = [](const juce::Component* window, const juce::Component* top, const juce::Component* focused)
+        {
+            return PresetBrowser::leavesNoteKeysFree(window, top, focused);
+        };
+
+        check(free(&browserWindow, &browserWindow, &listInside), "with the list focused, the keys play notes");
+        check(free(&browserWindow, &browserWindow, nullptr), "and in the moment before the list takes focus");
+        check(free(&browserWindow, &browserWindow, &browserWindow), "and with the window itself focused");
+
+        check(!free(&browserWindow, &browserWindow, &searchInside), "typing in the search box does not play notes");
+        check(!free(&browserWindow, &menuOverIt, &listInside), "nor does using a menu opened over the browser");
+        check(!free(&browserWindow, &browserWindow, &partOfTheEditor), "nor anything focused outside the browser");
+
+        check(!free(nullptr, &menuOverIt, nullptr), "with no browser open, another dialog keeps the keys");
+        check(!free(nullptr, nullptr, nullptr), "and with nothing open, this rule has no say at all");
+
+        std::cout << "  the note keys play through the preset browser, except while typing" << std::endl;
+    }
+
     std::cout << std::endl;
     if (failures == 0)
         std::cout << "ALL PROCESSOR TESTS PASSED" << std::endl;

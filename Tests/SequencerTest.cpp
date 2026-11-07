@@ -92,6 +92,380 @@ int samplesPerStep(const SynthParameters& params, double bpm)
 // The sequencer hands out hits; the kit turns hits into sound; neither knows
 // the other exists. So "does a hit nudged three ticks early land at the end of
 // the bar before it" is a question about integers here, not about a waveform.
+// Drums played by hand with REC armed. They reach the sequencer by their own
+// route, because the processor takes the drum channel out of the MIDI buffer
+// before the sequencer sees it - which is how a whole release shipped with REC
+// writing synth notes and ignoring every drum.
+void playedDrumSection()
+{
+    std::cout << std::endl << "Recording played drums:" << std::endl;
+
+    constexpr int kick = 0;
+    constexpr int snare = 1;
+    static constexpr double bpm = 120.0;
+
+    // Four steps, so 64 ticks and 8 cells, and step 2 is cell 4 and tick 32.
+    struct Rig
+    {
+        StepSequencer sequencer;
+        tempo::MusicalClock clock;
+        SynthParameters params;
+        int position = 0;
+
+        // The pattern's own hits as (voice, absolute sample), in the 512-sample
+        // blocks a real device would ask for.
+        std::vector<std::pair<int, int>> fired;
+    };
+
+    auto makeRig = [](bool quantise)
+    {
+        auto rig = std::make_unique<Rig>();
+        setupParams(rig->params);
+        rig->params.seqLength = 4.0f;
+        rig->params.seqRecord = 1.0f;
+        rig->params.seqRecordNotes = 1.0f;
+        rig->params.seqQuantise = quantise ? 1.0f : 0.0f;
+        rig->sequencer.prepare(sampleRate);
+        rig->clock.prepare(sampleRate);
+        return rig;
+    };
+
+    auto runTo = [](Rig& rig, int target)
+    {
+        juce::MidiBuffer midi;
+
+        while (rig.position < target)
+        {
+            const int length = juce::jmin(512, target - rig.position);
+            midi.clear();
+            runBlock(rig.sequencer, rig.clock, midi, length, rig.params, bpm);
+
+            for (int i = 0; i < rig.sequencer.getNumDrumHits(); ++i)
+            {
+                const auto hit = rig.sequencer.getDrumHit(i);
+                rig.fired.push_back({ hit.voice, rig.position + hit.sampleOffset });
+            }
+
+            rig.position += length;
+        }
+    };
+
+    // Not rounded per step, for the reason drumHitSection gives. A sample a
+    // little way INTO the tick, so the played tick reads as the one asked for.
+    auto sampleOfTick = [](const SynthParameters& params, double tick)
+    {
+        const auto division = (int) std::round(params.seqDivision.load());
+        const auto exactStep = sampleRate / tempo::divisionToHz(division, bpm);
+        return (int) std::ceil((tick + 0.1) * exactStep / (double) StepSequencer::ticksPerStep);
+    };
+
+    auto cellsOf = [](const StepSequencer& sequencer, int voice)
+    {
+        std::vector<int> cells;
+        for (int cell = 0; cell < StepSequencer::numDrumCells; ++cell)
+            if (sequencer.getDrumCell(voice, cell).active)
+                cells.push_back(cell);
+        return cells;
+    };
+
+    auto timesFired = [](const Rig& rig, int voice)
+    {
+        int count = 0;
+        for (const auto& hit : rig.fired)
+            if (hit.first == voice)
+                ++count;
+        return count;
+    };
+
+    static constexpr int passTicks = 64;
+
+    {
+        // Late. The playhead is already past the step it snaps back to, so the
+        // take starts playing on the next pass and there is nothing to skip.
+        auto rig = makeRig(true);
+
+        runTo(*rig, sampleOfTick(rig->params, 35.0));
+        rig->sequencer.notePlayedDrumHit(kick, 0.7f, false, 0);
+        runTo(*rig, sampleOfTick(rig->params, passTicks));
+
+        const auto cells = cellsOf(rig->sequencer, kick);
+        check(cells == std::vector<int>{ 4 }, "a hit played late in step 2 lands on step 2");
+
+        const auto written = rig->sequencer.getDrumCell(kick, 4);
+        check(written.nudge == 0, "and quantised, it sits on the step");
+        check(std::abs(written.velocity - 0.7f) < 0.001f, "at the velocity it was played");
+        check(!written.accent, "without an accent it was not played with");
+        check(timesFired(*rig, kick) == 0, "and the pass it was played on adds nothing to it");
+
+        runTo(*rig, sampleOfTick(rig->params, passTicks * 2));
+        check(timesFired(*rig, kick) == 1, "the next pass plays it back, once");
+
+        bool anyStep = false;
+        for (int i = 0; i < StepSequencer::maxSteps; ++i)
+            anyStep = anyStep || rig->sequencer.getStep(i).active;
+        check(!anyStep, "and a drum never lands on the note grid");
+    }
+
+    {
+        // Five ticks past step 2 is closer to the half-step after it than to
+        // the step, and it is still step 2: a hit that late is a late hit, not
+        // a 32nd. Snapping to cells would put it a 32nd behind the beat.
+        auto rig = makeRig(true);
+
+        runTo(*rig, sampleOfTick(rig->params, 37.0));
+        rig->sequencer.notePlayedDrumHit(kick, 0.8f, false, 0);
+        runTo(*rig, rig->position + 512);
+
+        check(cellsOf(rig->sequencer, kick) == std::vector<int>{ 4 },
+              "quantised, a hit snaps to the nearest step rather than the nearest half-step");
+    }
+
+    {
+        // Early, and the case that decides whether this sounds right: the hit
+        // snaps FORWARD to a step the playhead has not reached, so unless that
+        // step sits this pass out, every early hit plays twice.
+        auto rig = makeRig(true);
+
+        runTo(*rig, sampleOfTick(rig->params, 29.0));
+        rig->sequencer.notePlayedDrumHit(kick, 0.8f, false, 0);
+        runTo(*rig, sampleOfTick(rig->params, passTicks));
+
+        check(cellsOf(rig->sequencer, kick) == std::vector<int>{ 4 }, "a hit played early snaps forward");
+        check(timesFired(*rig, kick) == 0, "and is not played a second time as the playhead reaches it");
+
+        runTo(*rig, sampleOfTick(rig->params, passTicks * 2));
+        check(timesFired(*rig, kick) == 1, "it plays on the pass after");
+
+        runTo(*rig, sampleOfTick(rig->params, passTicks * 3));
+        check(timesFired(*rig, kick) == 2, "and on every pass from then on");
+    }
+
+    {
+        // Only the voice that was played sits out. Everything else on that tick
+        // is still the pattern, and has not been heard yet.
+        auto rig = makeRig(true);
+        rig->sequencer.setDrumCellActive(snare, 4, true);
+        rig->sequencer.setDrumCellActive(kick, 4, true);
+
+        runTo(*rig, sampleOfTick(rig->params, 29.0));
+        rig->sequencer.notePlayedDrumHit(kick, 0.8f, false, 0);
+        runTo(*rig, sampleOfTick(rig->params, passTicks));
+
+        check(timesFired(*rig, snare) == 1, "the snare on that step still plays");
+        check(timesFired(*rig, kick) == 0, "while the kick played over it does not play twice");
+    }
+
+    {
+        // Stopping forgets the skip. A cell still waiting to sit out when the
+        // transport stopped must not lose its first hit of the next run.
+        auto rig = makeRig(true);
+
+        runTo(*rig, sampleOfTick(rig->params, 29.0));
+        rig->sequencer.notePlayedDrumHit(kick, 0.8f, false, 0);
+        runTo(*rig, rig->position + 512);
+
+        rig->params.seqPlaying = 0.0f;
+        runTo(*rig, rig->position + 512);
+
+        rig->params.seqPlaying = 1.0f;
+        rig->clock.reset();
+        rig->fired.clear();
+        rig->position = 0;
+        runTo(*rig, sampleOfTick(rig->params, passTicks));
+
+        check(timesFired(*rig, kick) == 1, "a hit caught early does not silence the next run");
+    }
+
+    {
+        // In one long block, with the hit part way through it. The block scans
+        // past the step before the sequencer could have reached it sample by
+        // sample, so this is the same skip from a much bigger buffer.
+        auto rig = makeRig(true);
+
+        juce::MidiBuffer midi;
+        rig->sequencer.notePlayedDrumHit(kick, 0.8f, false, sampleOfTick(rig->params, 35.0));
+        const int wholePass = sampleOfTick(rig->params, passTicks);
+        runBlock(rig->sequencer, rig->clock, midi, wholePass, rig->params, bpm);
+
+        check(rig->sequencer.getNumDrumHits() == 0, "a hit inside a long block is not played twice either");
+        check(cellsOf(rig->sequencer, kick) == std::vector<int>{ 4 }, "and lands where it should");
+    }
+
+    {
+        // The last moments of the bar belong to the top of the next one.
+        auto rig = makeRig(true);
+
+        runTo(*rig, sampleOfTick(rig->params, 62.0));
+        rig->sequencer.notePlayedDrumHit(kick, 0.8f, false, 0);
+        runTo(*rig, sampleOfTick(rig->params, passTicks + 8.0));
+
+        check(cellsOf(rig->sequencer, kick) == std::vector<int>{ 0 }, "a hit just before the bar line lands on the downbeat");
+        check(timesFired(*rig, kick) == 0, "and is not played again straight after it");
+
+        runTo(*rig, sampleOfTick(rig->params, passTicks * 2 + 8.0));
+        check(timesFired(*rig, kick) == 1, "it plays from the next bar on");
+    }
+
+    {
+        // Quantise off keeps how it was played, including between the steps,
+        // which quantised recording deliberately will not do.
+        auto recordedAt = [&](double tick)
+        {
+            auto rig = makeRig(false);
+
+            runTo(*rig, sampleOfTick(rig->params, tick));
+            rig->sequencer.notePlayedDrumHit(kick, 0.8f, false, 0);
+            runTo(*rig, sampleOfTick(rig->params, passTicks));
+            rig->fired.clear();
+            runTo(*rig, sampleOfTick(rig->params, passTicks * 2));
+
+            const auto division = (int) std::round(rig->params.seqDivision.load());
+            const auto exactTick = sampleRate / tempo::divisionToHz(division, bpm)
+                                 / (double) StepSequencer::ticksPerStep;
+            const auto cells = cellsOf(rig->sequencer, kick);
+
+            struct Result { std::vector<int> cells; int nudge; double firedAtTick; int count; };
+            return Result { cells,
+                            cells.empty() ? 99 : rig->sequencer.getDrumCell(kick, cells[0]).nudge,
+                            rig->fired.empty() ? -1.0 : (double) rig->fired[0].second / exactTick - passTicks,
+                            timesFired(*rig, kick) };
+        };
+
+        const auto between = recordedAt(24.0);
+        check(between.cells == std::vector<int>{ 3 }, "unquantised, a hit between the steps stays between them");
+        check(between.nudge == 0, "sitting on its cell when it was played on it");
+
+        const auto early = recordedAt(21.0);
+        check(early.cells == std::vector<int>{ 3 } && early.nudge == -3, "played before a cell, it is nudged early");
+        check(std::abs(early.firedAtTick - 21.0) <= 1.0, "and fires on the tick it was played");
+
+        const auto late = recordedAt(19.0);
+        check(late.cells == std::vector<int>{ 2 } && late.nudge == 3, "played after a cell, it is nudged late");
+        check(std::abs(late.firedAtTick - 19.0) <= 1.0, "and fires on the tick it was played");
+        check(late.count == 1, "and only once");
+
+        // The early nudge across the bar line, which only works because the
+        // cell wraps and its base does not.
+        const auto barLine = recordedAt(62.0);
+        check(barLine.cells == std::vector<int>{ 0 } && barLine.nudge == -2, "a late-bar hit keeps its timing against the next downbeat");
+        check(std::abs(barLine.firedAtTick - 62.0) <= 1.0, "and fires where it was played, before the bar line");
+
+        // A hit later in the same block, so the block still has to scan its
+        // tick. The exact case that would play the same hit twice at once.
+        auto rig = makeRig(false);
+        runTo(*rig, sampleOfTick(rig->params, 21.0));
+        rig->sequencer.notePlayedDrumHit(kick, 0.8f, false, 300);
+        runTo(*rig, rig->position + 512);
+        check(timesFired(*rig, kick) == 0, "a hit later in the block is not played again by that block");
+    }
+
+    {
+        // What it was played with comes back: this is what a pad's velocity and
+        // the Shift key are for.
+        auto rig = makeRig(true);
+
+        runTo(*rig, sampleOfTick(rig->params, 16.0));
+        rig->sequencer.notePlayedDrumHit(kick, 0.95f, true, 0);
+        runTo(*rig, sampleOfTick(rig->params, passTicks + 8.0));
+
+        check(rig->sequencer.getDrumCell(kick, 2).accent, "an accented hit is written accented");
+
+        juce::MidiBuffer midi;
+        bool heard = false;
+
+        while (rig->position < sampleOfTick(rig->params, passTicks + 24.0) && !heard)
+        {
+            midi.clear();
+            runBlock(rig->sequencer, rig->clock, midi, 512, rig->params, bpm);
+            rig->position += 512;
+
+            for (int i = 0; i < rig->sequencer.getNumDrumHits(); ++i)
+            {
+                const auto hit = rig->sequencer.getDrumHit(i);
+
+                if (hit.voice == kick)
+                {
+                    heard = true;
+                    check(hit.accent, "and plays back accented");
+                    check(std::abs(hit.velocity - 0.95f) < 0.001f, "at the velocity it was played");
+                }
+            }
+        }
+
+        check(heard, "the accented hit plays back at all");
+    }
+
+    {
+        // A hit played over one already there replaces how it plays and leaves
+        // its chance alone. A cell switched OFF hides its chance, and that must
+        // not make a hit just played come back only sometimes.
+        auto rig = makeRig(true);
+
+        StepSequencer::DrumCell hidden;
+        hidden.active = false;
+        hidden.probability = 0.0f;
+        rig->sequencer.setDrumCell(kick, 2, hidden);
+
+        StepSequencer::DrumCell chancy;
+        chancy.active = true;
+        chancy.probability = 0.5f;
+        rig->sequencer.setDrumCell(snare, 2, chancy);
+
+        runTo(*rig, sampleOfTick(rig->params, 17.0));
+        rig->sequencer.notePlayedDrumHit(kick, 0.8f, false, 0);
+        rig->sequencer.notePlayedDrumHit(snare, 0.8f, false, 0);
+        runTo(*rig, rig->position + 512);
+
+        check(rig->sequencer.getDrumCell(kick, 2).probability == 1.0f, "a played hit does not inherit a chance the grid was hiding");
+        check(rig->sequencer.getDrumCell(snare, 2).probability == 0.5f, "and a hit already there keeps the one it was given");
+    }
+
+    {
+        // Each of the ways it must write nothing.
+        auto rig = makeRig(true);
+        rig->params.seqRecordNotes = 0.0f;
+        rig->sequencer.notePlayedDrumHit(kick, 0.8f, false, 0);
+        runTo(*rig, 512);
+        check(!rig->sequencer.isDrumVoiceUsed(kick), "with Rec notes off, a played drum is not recorded");
+
+        auto unarmed = makeRig(true);
+        unarmed->params.seqRecord = 0.0f;
+        unarmed->sequencer.notePlayedDrumHit(kick, 0.8f, false, 0);
+        runTo(*unarmed, 512);
+        check(!unarmed->sequencer.isDrumVoiceUsed(kick), "with REC off, a played drum is not recorded");
+
+        // Arming afterwards must not collect what was played before it.
+        unarmed->params.seqRecord = 1.0f;
+        runTo(*unarmed, 1024);
+        check(!unarmed->sequencer.isDrumVoiceUsed(kick), "and arming later does not collect it");
+
+        auto stopped = makeRig(true);
+        stopped->params.seqPlaying = 0.0f;
+        stopped->sequencer.notePlayedDrumHit(kick, 0.8f, false, 0);
+        runTo(*stopped, 512);
+        stopped->params.seqPlaying = 1.0f;
+        runTo(*stopped, 1024);
+        check(!stopped->sequencer.isDrumVoiceUsed(kick), "nor does a hit played with the transport stopped wait for it to start");
+    }
+
+    {
+        // Nothing a caller can say gets past the array.
+        auto rig = makeRig(true);
+        rig->sequencer.notePlayedDrumHit(-1, 0.8f, false, 0);
+        rig->sequencer.notePlayedDrumHit(StepSequencer::numDrumVoices, 0.8f, false, 0);
+
+        for (int i = 0; i < StepSequencer::maxDrumHitsPerBlock; ++i)
+            rig->sequencer.notePlayedDrumHit(kick, 0.8f, false, 0);
+
+        for (int i = 0; i < 10; ++i)
+            rig->sequencer.notePlayedDrumHit(snare, 0.8f, false, 0);
+
+        runTo(*rig, 512);
+        check(cellsOf(rig->sequencer, kick) == std::vector<int>{ 0 }, "a block's worth of played hits all count");
+        check(!rig->sequencer.isDrumVoiceUsed(snare), "and hits past what a block holds are dropped, not written off the end");
+    }
+}
+
 void drumHitSection()
 {
     std::cout << std::endl << "  drum hits" << std::endl;
@@ -1900,6 +2274,7 @@ int main()
 
     slideAndAccentSection();
     drumHitSection();
+    playedDrumSection();
 
     std::cout << std::endl;
     if (failures == 0)

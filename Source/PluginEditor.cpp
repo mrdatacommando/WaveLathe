@@ -2599,7 +2599,7 @@ void WaveLatheEditor::browsePresetsClicked()
     // Every path in here is a synth preset: auditioning, choosing and backing
     // out all change the Synth page's sound and nothing else. A file saved by
     // an older build may carry a whole project; only its sound is taken.
-    PresetBrowser::show(
+    presetBrowserWindow = PresetBrowser::show(
         [this](const FactoryPresets::Entry& entry)
         {
             applyPresetValues(entry.values,
@@ -3289,6 +3289,13 @@ bool WaveLatheEditor::keyboardIsElsewhere() const
     return focused != this && !isParentOf(focused);
 }
 
+bool WaveLatheEditor::presetBrowserLeavesNotesFree() const
+{
+    return PresetBrowser::leavesNoteKeysFree(presetBrowserWindow.getComponent(),
+                                             juce::ModalComponentManager::getInstance()->getModalComponent(0),
+                                             juce::Component::getCurrentlyFocusedComponent());
+}
+
 bool WaveLatheEditor::keyPressed(const juce::KeyPress& key, juce::Component*)
 {
     if (keyboardIsElsewhere())
@@ -3379,7 +3386,12 @@ void WaveLatheEditor::updateComputerKeyboardNotes(bool restartHeldKeys)
     // is every menu, dialog and file chooser.
     // A modifier held means a command was meant, not a note - otherwise Ctrl+Y
     // would sound the note on the Y key on its way to redoing something.
-    bool blocked = keyboardIsElsewhere() || !isShowing() || !juce::Process::isForegroundProcess()
+    //
+    // The preset browser is the one window of ours they play through, because
+    // choosing a sound means playing it.
+    const bool elsewhere = keyboardIsElsewhere() && !presetBrowserLeavesNotesFree();
+
+    bool blocked = elsewhere || !isShowing() || !juce::Process::isForegroundProcess()
                    || juce::ModifierKeys::getCurrentModifiers().isCommandDown()
                    || juce::ModifierKeys::getCurrentModifiers().isAltDown();
 
@@ -3407,7 +3419,7 @@ void WaveLatheEditor::updateComputerKeyboardNotes(bool restartHeldKeys)
                 // reach it with, so without this the loudest thing playable
                 // from the keyboard would be three quarters of the loudest
                 // thing the kit can do.
-                processorRef.auditionDrumVoice(
+                processorRef.playDrumVoice(
                     i, juce::ModifierKeys::getCurrentModifiers().isShiftDown());
 
                 waveformDisplay.showDrumSlot(i);
@@ -3425,7 +3437,14 @@ void WaveLatheEditor::updateComputerKeyboardNotes(bool restartHeldKeys)
     // Off the Drums page, nothing is held on the kit: the keys go back to
     // being notes and the next visit starts from silence rather than from
     // whatever was down when the page changed.
-    std::fill(drumKeyHeld.begin(), drumKeyHeld.end(), false);
+    //
+    // Browsing presets from the Drums page is different, because closing the
+    // browser hands the keys straight back to the kit. A note still held as
+    // Load is clicked counts as held there too, or it would strike a drum.
+    const bool browsing = presetBrowserWindow.getComponent() != nullptr;
+
+    for (int i = 0; i < numDrumKeys; ++i)
+        drumKeyHeld[(size_t) i] = browsing && juce::KeyPress::isKeyCurrentlyDown(drumKeys[i]);
 
     for (int i = 0; i < numComputerKeys; ++i)
     {

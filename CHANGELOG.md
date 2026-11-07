@@ -2,6 +2,25 @@
 
 Every release, newest first. Written as each change was made.
 
+## 0.49.1
+
+**REC now records the drums.** With REC armed, drums played from a MIDI pad or the computer keys sounded fine, but nothing landed on the drum grid. Both routes went straight to the kit and around the sequencer: the drum channel is taken out of the MIDI stream before the sequencer captures played notes from it, and the computer keys never go through MIDI at all.
+
+With REC armed and **Rec notes** ticked, played hits are now written onto the drum grid as the pattern runs:
+
+- **Quantise on:** a hit snaps to the nearest step, the same rule synth notes follow.
+- **Quantise off:** a hit keeps the timing it was played with, so it can land between two steps.
+- **Velocity and accent** are recorded as played. That means how hard a pad was hit, and Shift on a computer key.
+- **A hit played slightly early isn't heard twice.** It snaps forward onto a step the playhead hasn't reached yet, so that step sits out the current pass and plays from the next one.
+
+Clicking a drum's name still only plays it, and browsing samples doesn't record either. Those are for hearing a sound, and neither writes anything even with REC on.
+
+**The computer keyboard now plays notes while you browse synth presets.** The browser took the note keys away like every other dialog, so hearing a preset meant using the mouse or a MIDI controller. Now you can hold a key and arrow through the list to hear each sound.
+
+- **Always the synth:** this holds even if you opened the browser from the Drums page, where the same keys normally strike drums.
+- **The search box still gets its letters:** nothing plays while you're typing in it. Press an arrow key to move to the results, and the keys play notes again.
+- **Other windows still take the keys:** a menu or alert open over the browser silences them as before.
+
 ## 0.49.0
 
 **WaveLathe is open source.** It's licensed under the GNU Affero General Public License, version 3 or later. It's free, and it stays free: a version released under this licence can't be taken back, and anything built from one has to carry the same licence.

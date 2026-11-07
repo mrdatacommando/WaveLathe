@@ -139,7 +139,15 @@ public:
     // on the drum grid does - the way every drum machine lets you hear a voice
     // without running the pattern, and the only way to audition one at all
     // until phase 5 gives the kit a mixer.
+    //
+    // Never recorded, REC or no REC: this is how a click and the sample browser
+    // check a sound. playDrumVoice below is the one that means it.
     void auditionDrumVoice(int voice, bool accent = false);
+
+    // Play one drum voice as part of a performance, at the next block. What the
+    // computer keys do, and it sounds exactly like an audition - the difference
+    // is that an armed REC writes it onto the drum grid, as it does a pad.
+    void playDrumVoice(int voice, bool accent = false);
 
     // The loudest that voice has been since this was last called, and cleared
     // by calling it. Drives the indicator beside each Level dial, so it is
@@ -344,6 +352,11 @@ private:
     // half-written pair.
     static constexpr int auditionAccentShift = 16;
     std::atomic<juce::uint32> drumAuditions{0};
+
+    // The computer keys, in the same two fields. Apart from the auditions
+    // because these go through the sequencer on their way to the kit, and so
+    // are taken earlier in the block.
+    std::atomic<juce::uint32> playedDrumKeys{0};
 
     static_assert(project::numDrumVoices <= auditionAccentShift,
                   "The struck and accented halves of drumAuditions would overlap, so an "

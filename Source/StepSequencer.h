@@ -216,6 +216,19 @@ public:
     // would find out.
     int takeDroppedDrumHits() noexcept;
 
+    // ---- Drums played by hand, for REC ------------------------------------
+    //
+    // A pad or a computer key never reaches the MIDI buffer process() captures
+    // played notes from: the processor takes the drum channel out of it first,
+    // and strikes the kit directly. So a played hit is reported here instead,
+    // on the audio thread, before the process() call for the block it was
+    // played in. Clicking a drum's name to hear it is not reported: that is
+    // checking a sound, not playing a part.
+    //
+    // The next process() call takes all of them, armed or not, so a hit played
+    // with REC off cannot turn up in a take started later.
+    void notePlayedDrumHit(int voice, float velocity, bool accent, int sampleOffset);
+
     // Euclidean rhythm plus a melodic shape, leaving locked steps untouched.
     // Density is the number of steps that sound; range is how far the line is
     // allowed to wander in scale degrees.
@@ -268,6 +281,8 @@ private:
     void beginRecordedNote(int note, double atTick, float velocity, int patternSteps,
                            const SynthParameters& params);
     void endRecordedNote(int note, double atTick, int patternSteps);
+    void captureDrumHit(const DrumHit& hit, double blockStartTick, double ticksPerSample,
+                        int patternSteps, bool quantise);
 
     struct RecordedNote
     {
@@ -322,6 +337,21 @@ private:
     std::array<DrumHit, maxDrumHitsPerBlock> drumHits{};
     int numDrumHits = 0;
     int droppedDrumHits = 0;
+
+    // What was played by hand in the block about to run. Audio thread only.
+    std::array<DrumHit, maxDrumHitsPerBlock> playedDrumHits{};
+    int numPlayedDrumHits = 0;
+
+    // The cell each voice has already been heard on, and must not fire again
+    // the one time the playhead reaches it. See captureDrumHit. Audio thread
+    // only, and -1 for none.
+    static constexpr int noDrumCell = -1;
+    std::array<int, numDrumVoices> struckAheadOfPlayhead = []
+    {
+        std::array<int, numDrumVoices> cells{};
+        cells.fill(noDrumCell);
+        return cells;
+    }();
 
     struct Lane
     {

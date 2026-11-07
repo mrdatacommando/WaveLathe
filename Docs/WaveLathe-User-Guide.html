@@ -439,7 +439,7 @@ tr.group td {
     mix, and a sound matcher that fits a patch to a recording.
   </p>
   <dl class="cover-meta">
-    <div><dt>Version</dt><dd id="guide-version">0.49.0</dd></div>
+    <div><dt>Version</dt><dd id="guide-version">0.49.1</dd></div>
     <div><dt>Formats</dt><dd>VST3 &amp; Standalone</dd></div>
     <div><dt>Platform</dt><dd>Windows 10 / 11, 64-bit</dd></div>
     <div><dt>Licence</dt><dd>Free &amp; open source — GNU AGPL v3</dd></div>
@@ -1278,8 +1278,8 @@ tr.group td {
 
 <dl class="params">
   <dt>Play / Stop</dt><dd>Runs the pattern. It always starts from the top, so a take recorded now lines up with one recorded later.</dd>
-  <dt>REC</dt><dd>Arms recording. With <strong>Rec notes</strong> ticked it captures what you play as well as any dial you move; with it unticked it captures dial moves only.</dd>
-  <dt>Quantise</dt><dd>Snaps captured notes to the grid.</dd>
+  <dt>REC</dt><dd>Arms recording. With <strong>Rec notes</strong> ticked it captures what you play, synth notes and drum hits alike, as well as any dial you move; with it unticked it captures dial moves only.</dd>
+  <dt>Quantise</dt><dd>Snaps captured notes and drum hits to the nearest step. Off, they keep the timing they were played with, and a drum hit can land between two steps.</dd>
   <dt>Generate</dt><dd>Writes a new line using a Euclidean rhythm and a melodic shape, leaving locked steps untouched. Notes only — it is greyed out while the drum grid is showing.</dd>
   <dt>Clear Steps</dt><dd>Empties the note grid. Under the drum grid it reads <strong>Clear Drums</strong> and empties that instead. Undo brings either back.</dd>
   <dt>Length</dt><dd>How many steps before the pattern repeats, up to 64.</dd>
@@ -1496,6 +1496,21 @@ tr.group td {
   <li>While the Drums page is up, <kbd>Q</kbd> to <kbd>]</kbd> on the computer keyboard strike the twelve slots, left to right. Hold <kbd>Shift</kbd> for an accent (section 17).</li>
   <li>Play pads on a MIDI drum channel (section 14).</li>
 </ul>
+
+<p>
+  <b>Recording what you play.</b> Press <strong>REC</strong>, with
+  <strong>Rec notes</strong> ticked, and the keys and pads write onto the drum
+  grid as the pattern runs, at the velocity you played and with any accent.
+  Switch the sequencer to its drum grid to see them. Clicking a name does not
+  record: that is for hearing a drum, whether or not REC is on.
+</p>
+
+<p>
+  With <strong>Quantise</strong> on, a hit snaps to the nearest step. Turn it
+  off for anything that should fall between steps, such as a flam or a swung
+  hat. The computer keys arrive slightly later than a pad, so without Quantise
+  they sit a little behind the beat.
+</p>
 
 <p>
   While the Drums page is up, the Waveform and Envelope at the top of the
@@ -2036,7 +2051,7 @@ tr.group td {
   <tbody>
     <tr><td><strong>Save Project… · Load Project…</strong></td><td>Everything on every page: the sound, the tempo, the pattern and its automation, the whole kit with its samples, and both halves of the Master page.</td></tr>
     <tr><td><strong>Save Synth Preset… · Load Synth Preset…</strong></td><td>The Synth page's sound: oscillators, filter, envelopes, modulation, the synth's own effects, the expression routings, the arpeggiator, Play in Key, and a sampled wavetable if the sound uses one. Nothing else, either way round.</td></tr>
-    <tr><td><strong>Browse Synth Presets…</strong></td><td>Plays synth presets as you move through them, the factory bank and your own. <strong>Load</strong> keeps what you are hearing; <strong>Cancel</strong>, <kbd>Esc</kbd> or closing the window puts your sound back.</td></tr>
+    <tr><td><strong>Browse Synth Presets…</strong></td><td>Plays synth presets as you move through them, the factory bank and your own. <strong>Load</strong> keeps what you are hearing; <strong>Cancel</strong>, <kbd>Esc</kbd> or closing the window puts your sound back. The note keys keep playing the synth while it is open, so you can hold one and arrow through the list. While you type in the search box they do not; press an arrow key to go back to playing.</td></tr>
     <tr><td><strong>Init Synth Patch</strong></td><td>Resets the sound. The rest of the project is untouched.</td></tr>
   </tbody>
 </table>
@@ -2177,7 +2192,9 @@ tr.group td {
   The note keys stop playing when they should: while a menu, dialog or file
   chooser is open, while another application is in front, and whenever
   <kbd>Ctrl</kbd> or <kbd>Alt</kbd> is held — so <kbd>Ctrl</kbd>+<kbd>Y</kbd>
-  redoes something instead of sounding a note.
+  redoes something instead of sounding a note. The preset browser is the one
+  exception among dialogs: the keys keep playing the synth there, even if you
+  opened it from the Drums page, unless you are typing in its search box.
 </p>
 
 <h3>Drum keys</h3>
@@ -2354,7 +2371,7 @@ tr.group td {
 
 <footer class="colophon">
   <p>
-    <strong>WaveLathe <span class="guide-version">0.49.0</span></strong> —
+    <strong>WaveLathe <span class="guide-version">0.49.1</span></strong> —
     user guide. Bugs, questions and things that sound wrong:
     <strong>github.com/mrdatacommando/WaveLathe/issues</strong>
   </p>

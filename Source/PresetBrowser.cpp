@@ -111,7 +111,8 @@ void PresetBrowser::refresh()
     list.deselectAllRows();
 
     countLabel.setText(juce::String(rows.size()) + " preset" + (rows.size() == 1 ? "" : "s")
-                           + "  -  arrows audition, Load keeps it, Cancel puts your patch back",
+                           + "  -  arrows audition, the note keys play it\n"
+                             "Load keeps it, Cancel puts your patch back",
                        juce::dontSendNotification);
     list.repaint();
 }
@@ -168,6 +169,12 @@ void PresetBrowser::moveSelection(int delta)
 
     list.selectRow(next);
     list.scrollToEnsureRowIsOnscreen(next);
+
+    // Walking the results means the typing is over, so the keys go back to
+    // playing notes. Without this, the letter you press to hear what you just
+    // landed on goes into the search and throws the selection away.
+    if (searchBox.hasKeyboardFocus(false))
+        list.grabKeyboardFocus();
 }
 
 bool PresetBrowser::keyPressed(const juce::KeyPress& key, juce::Component*)
@@ -274,7 +281,25 @@ void PresetBrowser::resized()
     list.setBounds(area);
 }
 
-void PresetBrowser::show(ChooseFactory onFactory, ChooseFile onFile, Restore onRestore, Commit onCommit)
+bool PresetBrowser::leavesNoteKeysFree(const juce::Component* browserWindow,
+                                       const juce::Component* topModal,
+                                       const juce::Component* focused)
+{
+    if (browserWindow == nullptr || topModal != browserWindow)
+        return false;
+
+    // Nothing focused is fine: it is the moment before the list takes focus.
+    if (focused == nullptr)
+        return true;
+
+    if (dynamic_cast<const juce::TextEditor*>(focused) != nullptr)
+        return false;
+
+    return focused == browserWindow || browserWindow->isParentOf(focused);
+}
+
+juce::DialogWindow* PresetBrowser::show(ChooseFactory onFactory, ChooseFile onFile, Restore onRestore,
+                                        Commit onCommit)
 {
     juce::DialogWindow::LaunchOptions options;
     options.dialogTitle = "Synth Presets";
@@ -286,6 +311,6 @@ void PresetBrowser::show(ChooseFactory onFactory, ChooseFile onFile, Restore onR
     options.useNativeTitleBar = true;
     options.resizable = true;
 
-    options.launchAsync();
+    return options.launchAsync();
 }
 } // namespace wavelathe

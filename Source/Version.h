@@ -15,6 +15,22 @@ namespace wavelathe
 // carries the same number, because that is what a DAW reads off the plugin and
 // this header is what the standalone shows in its own header. Move both.
 //
+//   0.49.1 REC records the drums. A pad and a computer key both played with
+//          REC armed and wrote nothing: the drum channel leaves the MIDI buffer
+//          before the sequencer captures from it, and the keys were never in
+//          it, so both went straight to the kit and the sequencer never heard
+//          of them. The processor now reports each played hit to it. Clicking
+//          a name still only auditions, as the sample browser relies on.
+//          Quantised, a hit snaps to the nearest step rather than the nearest
+//          cell, because half a cell is 31ms at 120bpm and a polled key can be
+//          that late on its own. A hit caught early has already been heard, so
+//          the cell it snapped forward to sits out the pass rather than flam.
+//          And the note keys play through the preset browser, which took them
+//          away like every other dialog, so hearing a preset meant the mouse or
+//          a controller. Not while typing in its search box, and not with its
+//          menu open. Synth notes even from the Drums page, whose keys are
+//          drums, because the only thing worth playing is the sound being
+//          chosen. An arrow pressed in the search box hands the keys back.
 //   0.49.0 WaveLathe is open source, under the GNU Affero General Public
 //          License, version 3 or later. It is free and it stays free: a
 //          version released under it cannot be taken back, and anything made
@@ -1559,7 +1575,7 @@ namespace version
 {
 constexpr int major = 0;
 constexpr int minor = 49;
-constexpr int patch = 0;
+constexpr int patch = 1;
 
 inline juce::String string()
 {

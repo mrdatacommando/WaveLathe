@@ -39,6 +39,8 @@ void StepSequencer::reset()
     samplesUntilNoteOff = 0;
     sustainingForSlide = false;
     currentStep.store(0);
+    numPlayedDrumHits = 0;
+    struckAheadOfPlayhead.fill(noDrumCell);
 }
 
 StepSequencer::Step StepSequencer::getStep(int index) const
@@ -575,6 +577,15 @@ void StepSequencer::scanDrumCells(int tick, int samplePosition, int ticksInPatte
         if (fireTick != tick)
             continue;
 
+        // Already heard: this is the hit captureDrumHit caught early. Before
+        // the chance roll, so sitting out does not move the random sequence
+        // the rest of the pattern is rolled from.
+        if (struckAheadOfPlayhead[(size_t) voice] == cell)
+        {
+            struckAheadOfPlayhead[(size_t) voice] = noDrumCell;
+            continue;
+        }
+
         // Rolled per hit, from the same generator the melodic steps use, so a
         // pattern with probability on it varies as a whole rather than the
         // drums and the line taking turns being the unpredictable one.
@@ -753,6 +764,99 @@ void StepSequencer::captureIncomingNotes(const juce::MidiBuffer& midi, double bl
         else
             endRecordedNote(message.getNoteNumber(), atTick, patternSteps);
     }
+}
+
+void StepSequencer::notePlayedDrumHit(int voice, float velocity, bool accent, int sampleOffset)
+{
+    if (voice < 0 || voice >= numDrumVoices || numPlayedDrumHits >= maxDrumHitsPerBlock)
+        return;
+
+    DrumHit hit;
+    hit.voice = voice;
+    hit.velocity = velocity;
+    hit.accent = accent;
+    hit.sampleOffset = sampleOffset;
+
+    playedDrumHits[(size_t) numPlayedDrumHits] = hit;
+    ++numPlayedDrumHits;
+}
+
+void StepSequencer::captureDrumHit(const DrumHit& hit, double blockStartTick, double ticksPerSample,
+                                    int patternSteps, bool quantise)
+{
+    const int ticksInPattern = patternSteps * ticksPerStep;
+    const int cellsInPattern = patternSteps * drumSubdivisions;
+
+    double atTick = std::fmod(blockStartTick + hit.sampleOffset * ticksPerSample, (double) ticksInPattern);
+    if (atTick < 0.0)
+        atTick += (double) ticksInPattern;
+
+    // Both unwrapped for now, the way scanDrumCells keeps its base: in the last
+    // moments of a bar the nearest cell is one past the end, which is cell 0 of
+    // the next time round.
+    int nearestCell = 0;
+    int nudge = 0;
+
+    if (quantise)
+    {
+        // The nearest STEP, the same rule played notes follow, and not the
+        // nearest cell. Half a cell is too small a target to hit by hand: at
+        // 120bpm it is 31ms, and a computer key is polled and then waits for
+        // the next block, so it can arrive that late on its own. Snapping to
+        // cells would put a kick played on the beat a 32nd after it. A hit
+        // meant to fall between steps is what turning Quantise off is for.
+        nearestCell = (int) std::llround(atTick / (double) ticksPerStep) * drumSubdivisions;
+    }
+    else
+    {
+        // Left where it fell: the nearest cell, and how far off it. Exactly
+        // what scanDrumCells reads back, so the hit fires on the tick played.
+        const int playedTick = (int) std::floor(atTick);
+        nearestCell = (playedTick + ticksPerDrumCell / 2) / ticksPerDrumCell;
+        nudge = juce::jlimit(-maxDrumNudge, maxDrumNudge, playedTick - nearestCell * ticksPerDrumCell);
+    }
+
+    const int cell = nearestCell % cellsInPattern;
+
+    {
+        const juce::SpinLock::ScopedLockType lock(patternLock);
+
+        auto& target = drumCells[(size_t) hit.voice][(size_t) cell];
+
+        // A cell switched off keeps its chance behind it, and a hit just played
+        // should not come back only some of the time because of a setting the
+        // grid is not showing. A hit already there keeps the one it was given.
+        if (!target.active)
+            target.probability = 1.0f;
+
+        target.active = true;
+        target.velocity = juce::jlimit(0.05f, 1.0f, hit.velocity);
+        target.accent = hit.accent;
+        target.nudge = nudge;
+    }
+
+    // The kit has already played this hit. If the cell it landed on is still
+    // ahead of the playhead - played a little early, and snapped forward - the
+    // sequencer is about to play it as well, and every early hit would flam.
+    // So the cell sits this one pass out. From the next pass on it is the take.
+    //
+    // Measured from the last tick scanned rather than from the hit alone,
+    // because a long block scans a stretch of ticks and all of them are still
+    // to come, however far into the block the hit was played.
+    int fireTick = (nearestCell * ticksPerDrumCell + nudge) % ticksInPattern;
+    if (fireTick < 0)
+        fireTick += ticksInPattern;
+
+    int forward = (fireTick - lastTick) % ticksInPattern;
+    if (forward < 0)
+        forward += ticksInPattern;
+
+    double playedPastScan = std::fmod(atTick - (double) lastTick, (double) ticksInPattern);
+    if (playedPastScan < 0.0)
+        playedPastScan += (double) ticksInPattern;
+
+    if (forward > 0 && (double) forward <= playedPastScan + (double) ticksPerStep / 2.0)
+        struckAheadOfPlayhead[(size_t) hit.voice] = cell;
 }
 
 void StepSequencer::applyAutomation(SynthParameters& params, int tick)
@@ -977,6 +1081,12 @@ void StepSequencer::process(juce::MidiBuffer& midi, int numSamples, SynthParamet
     // even when the block that just ran produced nothing.
     numDrumHits = 0;
 
+    // Taken here for the same reason: whatever happens below, what was played
+    // belongs to this block and is gone after it. A stopped or unarmed
+    // sequencer has to throw it away rather than save it for the next take.
+    const int numPlayed = numPlayedDrumHits;
+    numPlayedDrumHits = 0;
+
     bool shouldPlay = params.seqPlaying.load() > 0.5f;
     playing.store(shouldPlay);
 
@@ -995,6 +1105,7 @@ void StepSequencer::process(juce::MidiBuffer& midi, int numSamples, SynthParamet
             // next take from the same instant.
             lastTick = -1;
             currentStep.store(0);
+            struckAheadOfPlayhead.fill(noDrumCell);
         }
 
         // A pass ends when the transport does, so nothing stays latched into the
@@ -1041,7 +1152,14 @@ void StepSequencer::process(juce::MidiBuffer& midi, int numSamples, SynthParamet
     // What is being played is captured onto the grid before the sequencer adds
     // its own notes, so the two never get confused for each other.
     if (recording && params.seqRecordNotes.load() > 0.5f)
+    {
         captureIncomingNotes(midi, tickPosition, ticksPerSample, length, params);
+
+        const bool quantise = params.seqQuantise.load() > 0.5f;
+
+        for (int i = 0; i < numPlayed; ++i)
+            captureDrumHit(playedDrumHits[(size_t) i], tickPosition, ticksPerSample, length, quantise);
+    }
 
     juce::MidiBuffer generated;
 
